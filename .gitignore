@@ -1,0 +1,58 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with "go test -c"
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+tmp/
+
+# IDE specific files
+.idea
+
+# .env file
+.env
+
+# Project build
+main
+*templ.go
+
+# OS X generated file
+.DS_Store
+
+
+# Ignore local development files (e.g. from go fmt, etc.)
+go-build-*
+go-test-*
+
+# Ignore any other generated files or logs not explicitly listed here
+*.log
+*.tmp
+*.bak
+
+# Ignore Docker images and containers
+image-cache/*
+
+# Ignore Kubernetes persistent volumes
+pvc-*
+
+# influxdb
+influxdb-data/**
+
+# postgres
+postgres-data/**
+
+# Remove any .env files that may be present (e.g. from docker-compose)
+**/.env
+**/.envrc
