@@ -1,0 +1,109 @@
+version: "3.9"
+
+services:
+
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      # Ensure that the variables in .env match the same variables in devcontainer.json
+      - ../.envrc
+  
+    volumes:
+      - ../..:/workspaces:cached
+      
+    # Overrides default command so things don't shut down after the process ends.
+    command: sleep infinity
+    depends_on:
+      - db
+
+
+  db:
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT}:5432"
+    # volumes:
+    #   - psql_volume:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${DB_USERNAME}"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+
+  # TODO: make this work - error on environment variable layering 
+  # migrations:
+  #   image: docker.io/gendosu/goose
+  #   working_dir: /app
+  #   environment:
+  #     DB_CONNECTION: "postgres://${DB_USERNAME}:${DB_PASSWORD}@db:${DB_PORT}/${DB_DATABASE}?sslmode=disable"
+  #     DB_USERNAME: "${DB_USERNAME}"
+  #     DB_PASSWORD: "${DB_PASSWORD}"
+  #     DB_HOST: "db"
+  #     DB_PORT: "5432"
+  #     DB_DATABASE: "${DB_DATABASE}"
+  #   volumes:
+  #     - ./../db_migrations:/app/db_migrations
+  #     - ./../Makefile:/app/Makefile:ro
+  #   depends_on:
+  #     - db
+  #   entrypoint: >
+  #     sh -c "make migrate-up"
+
+
+  # kafka alternative
+  redpanda:
+    image: vectorized/redpanda
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp
+      - "1"
+      - --memory
+      - "1G"
+      - --reserve-memory
+      - "0M"
+      - --node-id
+      - "0"
+      - --kafka-addr
+      - PLAINTEXT://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
+      - --advertise-kafka-addr
+      - PLAINTEXT://redpanda:29092,OUTSIDE://redpanda:9092
+      - --check=false
+
+
+  redpandaconsole:
+    image: docker.redpanda.com/redpandadata/console:v2.3.8
+    restart: on-failure
+    entrypoint: /bin/sh
+    command: -c "echo \"$$CONSOLE_CONFIG_FILE\" > /tmp/config.yml; /app/console"
+    environment:
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        kafka:
+          brokers: ["redpanda:29092"]
+          schemaRegistry:
+            enabled: true
+            urls: ["http://redpanda:8081"]
+        connect:
+          enabled: true
+          clusters:
+            - name: datagen
+              url: http://connect:8083        
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redpanda
+
+
+# volumes:
+#   psql_volume:
