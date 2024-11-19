@@ -1,0 +1,24 @@
+global:
+  version: "0.1.0"
+  author: "Copito"
+
+# Setting up api database connection
+database:
+  type: postgres
+  connection_string: "postgres://postgres:postgres@db:5432/postgres?sslmode=disable"
+  max_open_conns: 10
+  max_idle_conns: 5
+  conn_max_lifetime: 300s
+
+# Setting up api configurations
+backend:
+  port: "5000"
+  tenancy: "company/development"
+
+# Setting up Kafka product
+kafka:
+  server: "redpanda:9092"
+  change_data_capture_topic_example: "cdc_orders_payment"
+  change_data_capture_topic_regex: "^cdc_.*"
+  topic_profile_management: "profile_management"
+  topic_profile_metric: "profile_metric"
