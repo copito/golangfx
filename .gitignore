@@ -56,3 +56,7 @@ postgres-data/**
 # Remove any .env files that may be present (e.g. from docker-compose)
 **/.env
 **/.envrc
+
+# Remove air temporary file
+air.tmp
+tmp/**
