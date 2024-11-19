@@ -1,31 +1,34 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/go-postgres
 {
-	"name": "Go & PostgreSQL",
+	"name": "Go (FX Service)",
 	"dockerComposeFile": "docker-compose.yaml",
 	"service": "app",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 
 	// Mount minikube
-	"mounts": [
-		"source=minikube-var-lib-docker,target=/var/lib/docker,type=volume",
-		"source=minikube-config,target=/home/vscode/.minikube,type=volume",
-		"source=~/.kube/,target=/home/vscode/.kube/,type=volume"
-	],
+	// "mounts": [
+	// 	"source=minikube-var-lib-docker,target=/var/lib/docker,type=volume",
+	// 	"source=minikube-config,target=/home/vscode/.minikube,type=volume",
+	// 	"source=~/.kube/,target=/home/vscode/.kube/,type=volume"
+	// ],
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	"features": {
-		"ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {},
 		"ghcr.io/audacioustux/devcontainers/k9s:1": {}
+		// "ghcr.io/devcontainers/features/postgres:1": {
+		// 	"version": "latest"
+		// }
 	},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": ["db:5432", "timeseries:8086", "redpanda:29092", "redpandaconsole:8080"],
+	"forwardPorts": ["db:5432", "redpanda:29092", "redpandaconsole:8080", "vault:8200"],
 	"portsAttributes": {
 		"29092": {"label": "Kafka Redpanda"},
 		"9092": {"label": "Kafka Redpanda"},
 		"8080": {"label": "Kafka Redpanda Console"},
-		"5432": {"label": "Database Postgress"}
+		"5432": {"label": "Database Postgress"},
+		"8200": {"label": "Vault"}
 	},
 
 	// Use 'postCreateCommand' to run commands after the container is created.
@@ -38,8 +41,6 @@
 			"extensions": [
 				"golang.go",
 				"zsh.go-snippets",
-				"oderwat.indent-rainbow",
-				"rangav.vscode-thunder-client",
 				"zxh404.vscode-proto3",
 				"redhat.vscode-yaml",
 				"aleksandra.go-group-imports",

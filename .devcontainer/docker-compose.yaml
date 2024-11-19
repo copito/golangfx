@@ -15,6 +15,11 @@ services:
       
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
+
+    # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
+    # Do this if port in db is not exposed
+    # network_mode: service:db
+
     depends_on:
       - db
 
@@ -54,6 +59,14 @@ services:
   #     - db
   #   entrypoint: >
   #     sh -c "make migrate-up"
+
+  vault:
+    image: hashicorp/vault:latest
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: testtoken
+    ports:
+      - 8200:8200
+    privileged: true
 
 
   # kafka alternative
