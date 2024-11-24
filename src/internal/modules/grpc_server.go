@@ -2,7 +2,6 @@ package modules
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"log/slog"
 	"net"
@@ -74,9 +73,14 @@ func NewGRPCServer(params GRPCParams) (GRPCResults, error) {
 	backendConfig := params.Config.Backend
 
 	// Create a listener on TCP port
-	lis, err := net.Listen("tcp", ":8080")
+	lis, err := net.Listen("tcp", backendConfig.GrpcPort)
 	if err != nil {
-		log.Fatalln("Failed to listen:", err)
+		params.Logger.Error(
+			"Failed to open listener for grpc",
+			slog.String("port", backendConfig.GrpcPort),
+			slog.Any("err", err),
+		)
+		panic("failed to listen to grpc port")
 	}
 
 	// Create a gRPC server object
@@ -86,23 +90,34 @@ func NewGRPCServer(params GRPCParams) (GRPCResults, error) {
 
 	// Create a client connection to the gRPC server we just started
 	// This is where the gRPC-Gateway proxies the requests
+	grpcFullUrl := "0.0.0.0" + backendConfig.GrpcPort
 	conn, err := grpc.NewClient(
-		"0.0.0.0:8080",
+		grpcFullUrl,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
-		log.Fatalln("Failed to dial server:", err)
+		params.Logger.Error(
+			"failed to dial grpc server to setup gRPC-Gateway",
+			slog.String("full_url", grpcFullUrl),
+			slog.Any("err", err),
+		)
+		panic("unable to open grpc connection to own server for gRPC-Gateway")
 	}
 
 	gwmux := runtime.NewServeMux()
-	// Register Greeter
+	// Register Runner
 	err = pb.RegisterRunnerServiceHandler(context.Background(), gwmux, conn)
 	if err != nil {
-		log.Fatalln("Failed to register gateway:", err)
+		params.Logger.Error(
+			"failed to register gateway gRPC-Gateway",
+			slog.String("handler", "RegisterRunnerServiceHandler"),
+			slog.Any("err", err),
+		)
+		panic("unable to register RegisterRunnerServiceHandler handler...")
 	}
 
 	gwServer := &http.Server{
-		Addr:    fmt.Sprintf(":%s", backendConfig.HttpPort),
+		Addr:    backendConfig.HttpPort,
 		Handler: gwmux,
 	}
 
@@ -111,22 +126,22 @@ func NewGRPCServer(params GRPCParams) (GRPCResults, error) {
 		OnStart: func(ctx context.Context) error {
 			// Serve gRPC server
 			go func(lis net.Listener) {
-				params.Logger.Info("Serving gRPC on 0.0.0.0:8080")
+				params.Logger.Info("Serving gRPC on: " + grpcFullUrl)
 				log.Fatalln(s.Serve(lis))
 			}(lis)
 
 			go func(gwServer *http.Server) {
-				params.Logger.Info("Serving gRPC-Gateway on http://0.0.0.0:8090")
+				params.Logger.Info("Serving gRPC-Gateway on: http://0.0.0.0" + backendConfig.HttpPort)
 				log.Fatalln(gwServer.ListenAndServe())
 			}(gwServer)
 
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			params.Logger.Info("Closing gRPC connection for port 8080...")
+			params.Logger.Info("Closing gRPC connection for port " + backendConfig.GrpcPort)
 			s.GracefulStop()
 
-			params.Logger.Info("Closing gRPC connection for port 8090...")
+			params.Logger.Info("Closing gRPC connection for port " + backendConfig.HttpPort)
 			_ = gwServer.Close()
 			return nil
 		},
