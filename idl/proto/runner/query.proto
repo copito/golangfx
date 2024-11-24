@@ -1,0 +1,156 @@
+syntax = "proto3";
+
+package runner;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "google/api/annotations.proto";
+
+
+// Job Status refers to the current state in which the job query is in
+// This helps determine if the query has been send, received by the worker
+// and the worker is ready to receive the results.
+enum JobStatus {
+    JOB_STATUS_UNSPECIFIED = 0;
+    JOB_STATUS_SUBMITTED = 1;
+    JOB_STATUS_QUEUED = 2;
+    JOB_STATUS_WORKER_STARTED = 3;
+    JOB_STATUS_RUNNING = 4;
+    JOB_STATUS_FAILED = 5;
+    JOB_STATUS_SUCCESSFUL = 6;
+    JOB_STATUS_RETRIEVING_DATA = 7;
+    JOB_STATUS_WORKER_STOPPED = 8;
+}
+
+// Job Type defines what type of synchronicity does the job expect
+// the results to be returned in (SYNC / ASYNC), where the async
+// route should be the default to avoid tieing worker with client (due to scalability)
+enum JobType {
+    JOB_TYPE_UNSPECIFIED = 0;
+    JOB_TYPE_SYNC = 1;
+    JOB_TYPE_ASYNC = 2;
+}
+
+// This is a list of key value pairs (dictionary) that will be passed to the query,
+// so that the templating engine can add these to the query or modify the templated
+// query before being run by query engine.
+message QueryParams {
+    string key = 1;
+    string value = 2;
+}
+
+// This represents the metadata of a query result, which includes
+// column names and data types. This is used to inform the client
+// about the structure of the data they are receiving.
+message QueryResultMetadata {
+    repeated string columns = 1; // i.e. ["uuid", "price", "effective_date", "created_at"]
+    repeated string data_types = 2; // i.e. ["string", "float", "date", "timestamp"]
+    string row_count = 3; // i.e. 500
+}
+
+// QueryJob represents
+message QueryJob {
+    string job_uuid = 1;
+    string reference = 2;
+    JobStatus status = 3;
+    JobType job_type = 4; // i.e. SYNC
+    
+    google.protobuf.Timestamp created_at = 5;
+}
+
+// Ping Command
+message PingRequest {}
+message PingResponse {
+    string message = 1;
+}
+
+message GetAvailableEnginesRequest {}
+
+message GetAvailableEnginesResponse {
+    repeated string engines = 1;
+}
+
+message SubmitQueryRequest {
+    string query = 1;
+    string engine = 2;
+    repeated QueryParams params = 3;
+    JobType job_type = 4;
+    google.protobuf.Timestamp created_at = 5;
+}
+
+message QueryResultResponse {
+    QueryJob job = 1;
+    string data = 2;
+    JobType job_type = 3;
+    QueryResultMetadata result_metadata = 4; // i.e. {'columns': [], 'data_types': []}
+    google.protobuf.Struct engine_metadata = 5; // i.e. {'execution_time_in_sec': 2.33, 'traceback': false, ...}
+}
+
+message SubmitQueryAsyncResponse {
+    QueryJob job = 1;
+    uint32 pull_schedule_in_ms = 2;
+}
+
+message CheckQueryStatusRequest {
+    string job_uuid = 1;
+}
+
+message CheckQueryStatusResponse {
+    QueryJob job = 1;
+}
+
+message GetQueryResultRequest {
+    string job_uuid = 1;
+}
+
+
+service RunnerService {
+
+    // Testing function for Runner Service
+    rpc Ping (PingRequest) returns (PingResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/ping"
+        };
+    }
+
+    // Get available query engines
+    rpc GetAvailableEngines (GetAvailableEnginesRequest) returns (GetAvailableEnginesResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/engines"
+        };
+    }
+
+    // Submit query to the service synchonously
+    rpc SubmitQuery (SubmitQueryRequest) returns (QueryResultResponse) {
+        // option (google.api.http) = {
+        //     post: "/api/v1/job/sync/"
+        //     body: "*"
+        // };
+    }
+
+    // Submit query to the service asynchonously
+    rpc SubmitQueryAsync (SubmitQueryRequest) returns (SubmitQueryAsyncResponse){
+        // option (google.api.http) = {
+        //     post: "/api/v1/job/async/"
+        //     body: "*"
+        // };
+    }
+
+    // Check the query status submitted (or done)
+    rpc CheckQueryStatus (CheckQueryStatusRequest) returns (CheckQueryStatusResponse){
+        option (google.api.http) = {
+            get: "/api/v1/job/{job_uuid}/status"
+        };
+    }
+
+    // Gets query result if query has been completed
+    rpc GetQueryResult (GetQueryResultRequest) returns (stream QueryResultResponse){
+        option (google.api.http) = {
+            get: "/api/v1/job/{job_uuid}/data"
+        };
+    }
+}
+
+
+
+

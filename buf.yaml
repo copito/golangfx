@@ -1,0 +1,24 @@
+# For details on buf.yaml configuration, visit https://buf.build/docs/configuration/v2/buf-yaml
+version: v2
+
+
+modules:
+  - path: idl/proto/
+
+# Modules now share a common set of dependencies. This was the major concern with the v1
+# buf.work.yaml and v1 buf.yaml setup - every module had its own (potentially conflicting)
+# set of dependencies, which made simultaneously pushing the modules impossible, and led
+# many commands within the buf CLI to effectively mash the dependencies together in ways
+# not exposed to users.
+#
+# There will be a single buf.lock file produced, which lives alongside this buf.yaml.
+deps:
+  - buf.build/googleapis/googleapis
+  # - buf.build/grpc/grpc
+
+lint:
+  use:
+    - STANDARD
+breaking:
+  use:
+    - PACKAGE

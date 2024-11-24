@@ -1,0 +1,50 @@
+version: v2
+
+managed:
+  enabled: true
+  disable:
+    - file_option: go_package
+      module: buf.build/googleapis/googleapis
+
+  override:
+    - file_option: optimize_for
+      value: CODE_SIZE
+    - file_option: go_package_prefix
+      value: github.com/copito/runner/idl_gen/go
+    # # This rule takes precedence over the previous rule as it appears later in the override list.
+    # - file_option: go_package_prefix
+    #   module: buf.build/acme/billing
+    #   value: github.com/acme/billing
+    # - file_option: java_package_prefix
+    #   value: org
+    # - file_option: java_package
+    #   path: copito/runner/v1/finance.proto
+    #   value: org.copito
+
+plugins:
+
+  # Protocol buffer
+  - remote: buf.build/protocolbuffers/go
+    out: idl_gen
+    opt:
+      - paths=source_relative
+
+  # Transport layer GRPC
+  - remote: buf.build/grpc/go
+    out: idl_gen
+    opt: 
+      - paths=source_relative
+        # require_unimplemented_servers=false
+
+  # GRPC-Gateway
+  - remote: buf.build/grpc-ecosystem/gateway
+    out: idl_gen
+    opt:
+      - paths=source_relative
+  
+  # OPENAPI generation
+  - remote: buf.build/grpc-ecosystem/openapiv2
+    out: openapi/
+
+inputs:
+  - directory: idl/proto
