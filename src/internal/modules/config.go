@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/copito/runner/internal/entities"
+	"github.com/copito/runner/src/internal/entities"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
 )

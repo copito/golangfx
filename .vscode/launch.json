@@ -9,7 +9,7 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${workspaceFolder}/cmd/service/main.go",
+            "program": "${workspaceFolder}/src/cmd/service/main.go",
             "env": {
                 "GOENV": "development",
                 "CONFIG_PATH": "${workspaceFolder}/config",
@@ -25,7 +25,7 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${workspaceFolder}/cmd/service/main.go",
+            "program": "${workspaceFolder}/src/cmd/service/main.go",
             "env": {
                 "GOENV": "development",
                 "CONFIG_PATH": "${workspaceFolder}/config",

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/copito/runner/internal/entities"
+	"github.com/copito/runner/src/internal/entities"
 )
 
 func GenerateFakeData(logger *slog.Logger, conf *entities.Config, p *kafka.Producer) {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/copito/runner/internal/entities"
+	"github.com/copito/runner/src/internal/entities"
 	"go.uber.org/fx"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

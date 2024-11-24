@@ -5,7 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/copito/runner/internal/entities"
+	"github.com/copito/runner/src/internal/entities"
 	"go.uber.org/fx"
 )
 
