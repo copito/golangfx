@@ -12,8 +12,8 @@ database:
 
 # Setting up api configurations
 backend:
-  http_port: "5000"
-  grpc_port: "50001"
+  http_port: ":5000"
+  grpc_port: ":50001"
   tenancy: "company/development"
 
 # Setting up Kafka product
