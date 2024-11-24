@@ -122,18 +122,18 @@ service RunnerService {
 
     // Submit query to the service synchonously
     rpc SubmitQuery (SubmitQueryRequest) returns (QueryResultResponse) {
-        // option (google.api.http) = {
-        //     post: "/api/v1/job/sync/"
-        //     body: "*"
-        // };
+        option (google.api.http) = {
+            post: "/api/v1/job/sync"
+            body: "*"
+        };
     }
 
     // Submit query to the service asynchonously
     rpc SubmitQueryAsync (SubmitQueryRequest) returns (SubmitQueryAsyncResponse){
-        // option (google.api.http) = {
-        //     post: "/api/v1/job/async/"
-        //     body: "*"
-        // };
+        option (google.api.http) = {
+            post: "/api/v1/job/async"
+            body: "*"
+        };
     }
 
     // Check the query status submitted (or done)
