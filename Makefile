@@ -34,8 +34,9 @@ proto_init:
 	@go install google.golang.org/protobuf
 	# @buf config init # generates buf.yaml file
 
+# adding https://github.com/googleapis/googleapis -> annotations.proto / http.proto (via deps)
+# More examples for grpc-gateway at: https://grpc-ecosystem.github.io/grpc-gateway/docs/mapping/examples/
 proto:
-	# add https://github.com/googleapis/googleapis -> annotations.proto / http.proto
 	@buf dep update ${PROTO_DIR}
 	@buf generate
 	@go get google.golang.org/grpc && go get github.com/grpc-ecosystem/grpc-gateway/v2/runtime
