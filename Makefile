@@ -145,7 +145,7 @@ migrate_status:
 	@echo "Checking migration status..."
 	@goose -dir ${DB_MIGRATION_PATH} postgres "postgres://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_DATABASE)?sslmode=disable" status
 
-migrate-reset:
+migrate_reset:
 	@echo "Rolling back all migrations..."
 	@goose -dir ${DB_MIGRATION_PATH} postgres "postgres://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_DATABASE)?sslmode=disable" reset
 
