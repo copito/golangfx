@@ -32,6 +32,7 @@ proto_init:
 	@go install github.com/bufbuild/buf/cmd/buf@v1.47.2 
 	@go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2
 	@go install google.golang.org/protobuf
+	# @buf config init # generates buf.yaml file
 
 proto:
 	# add https://github.com/googleapis/googleapis -> annotations.proto / http.proto
@@ -43,6 +44,10 @@ proto:
 clean_proto:
 	rm -rf $(PROTO_OUTPUT_DIR)/* && touch $(PROTO_OUTPUT_DIR)/.keep
 	rm -rf $(OPENAPI_DIR)/* && touch $(OPENAPI_DIR)/.keep
+
+
+proto_lint:
+	@buf lint ${PROTO_DIR}
 
 ########################################
 ########### Application   ##############
