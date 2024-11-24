@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/copito/runner/internal/controller/fake_publisher"
-	"github.com/copito/runner/internal/modules"
+	"github.com/copito/runner/src/internal/modules"
 	"go.uber.org/fx"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -17,6 +17,7 @@ func main() {
 		modules.DatabaseModule,
 		modules.KafkaProducerModule,
 		modules.KafkaConsumerModule,
+		modules.GRPCModule,
 		// fx.Invoke(func(logger *slog.Logger, config *entities.Config, db *gorm.DB) {
 		// 	logger.Info(
 		// 		"Testing",
@@ -37,6 +38,7 @@ func main() {
 		// 		slog.Any("tx", tx.Error),
 		// 	)
 		// }),
-		fx.Invoke(fake_publisher.GenerateFakeData),
+		// fx.Invoke(fake_publisher.GenerateFakeData),
+		fx.Invoke(func(GrpcServer *grpc.Server) {}),
 	).Run()
 }
