@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 
-	pb "github.com/copito/runner/idl_gen/runner"
+	pb "github.com/copito/runner/idl_gen/runner/v1"
 )
 
 type server struct {
