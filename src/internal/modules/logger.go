@@ -51,7 +51,7 @@ type LoggerResult struct {
 
 func NewLogger(p LoggerParams) (LoggerResult, error) {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	logger.Info("setting up logging (with slog)...")
+	logger.Info("setting up logging module (with slog)...")
 
 	return LoggerResult{
 		Logger: logger,

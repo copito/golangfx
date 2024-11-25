@@ -24,7 +24,7 @@ type KafkaConsumerResults struct {
 }
 
 func NewKafkaConsumer(params KafkaConsumerParams) (KafkaConsumerResults, error) {
-	params.Logger.Info("setting up Kafka Consumer...")
+	params.Logger.Info("setting up Kafka Consumer module...")
 
 	kafkaConfig := params.Config.Kafka
 

@@ -24,7 +24,7 @@ type ConfigResult struct {
 }
 
 func NewConfig(params ConfigParams) (ConfigResult, error) {
-	params.Logger.Info("setting up Config (with viper)...")
+	params.Logger.Info("setting up Config module (with viper)...")
 
 	// Set the default configuration file name and path
 	defaultConfigName := "base"

@@ -28,7 +28,7 @@ type DBResults struct {
 
 // NewDatabase initializes a GORM DB connection to Postgres with lifecycle management.
 func NewDatabase(params DBParams) (DBResults, error) {
-	params.Logger.Info("setting up Database (with GORM)...")
+	params.Logger.Info("setting up Database module (with GORM)...")
 	dbConfig := params.Config.Database
 
 	// Set up GORM with a customized logger

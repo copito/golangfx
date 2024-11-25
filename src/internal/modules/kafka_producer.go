@@ -24,7 +24,7 @@ type KafkaProducerResults struct {
 }
 
 func NewKafkaProducer(params KafkaProducerParams) (KafkaProducerResults, error) {
-	params.Logger.Info("setting up Kafka Producer...")
+	params.Logger.Info("setting up Kafka Producer module...")
 
 	kafkaConfig := params.Config.Kafka
 
