@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/copito/runner/src/internal/modules"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
@@ -17,7 +20,10 @@ func main() {
 		modules.DatabaseModule,
 		modules.KafkaProducerModule,
 		modules.KafkaConsumerModule,
-		modules.GRPCModule,
+		modules.HandlerModule,
+		modules.GrpcServerModule,
+		modules.GRPCGatewayModule,
+
 		// fx.Invoke(func(logger *slog.Logger, config *entities.Config, db *gorm.DB) {
 		// 	logger.Info(
 		// 		"Testing",
@@ -39,6 +45,8 @@ func main() {
 		// 	)
 		// }),
 		// fx.Invoke(fake_publisher.GenerateFakeData),
-		fx.Invoke(func(GrpcServer *grpc.Server) {}),
+		fx.Invoke(func(GrpcServer *grpc.Server, grpcGatewayServer *http.Server) {
+			fmt.Print("testing")
+		}),
 	).Run()
 }
