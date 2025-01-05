@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"net/http"
+	"log/slog"
 
 	"github.com/copito/runner/src/internal/modules"
+	"github.com/copito/runner/src/internal/repository"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/fx"
-	"google.golang.org/grpc"
 )
 
 func main() {
@@ -18,6 +20,8 @@ func main() {
 		modules.LoggerModule,
 		modules.ConfigModule,
 		modules.DatabaseModule,
+		modules.DatabasePoolModule,
+		modules.RepositoryModule,
 		modules.KafkaProducerModule,
 		modules.KafkaConsumerModule,
 		modules.HandlerModule,
@@ -45,8 +49,33 @@ func main() {
 		// 	)
 		// }),
 		// fx.Invoke(fake_publisher.GenerateFakeData),
-		fx.Invoke(func(GrpcServer *grpc.Server, grpcGatewayServer *http.Server) {
+		// fx.Invoke(func(GrpcServer *grpc.Server, grpcGatewayServer *http.Server, repo *repository.Queries) {
+
+		fx.Invoke(func(logger *slog.Logger, repo *repository.Queries, connPool *pgxpool.Pool) {
 			fmt.Print("testing")
+			ctx := context.Background()
+
+			conn, err := connPool.Acquire(ctx)
+			if err != nil {
+				logger.Info("Error while acquiring connection from the database pool!!")
+			}
+			defer conn.Release()
+
+			users, err := repo.GetAllUsers(ctx, conn)
+			if err != nil {
+				logger.Error("unable to get all users", slog.Any("err", err))
+				panic("error!!")
+			}
+
+			for _, user := range users {
+				logger.Info(fmt.Sprintf("%+v\n", user))
+				logger.Info(fmt.Sprintf("Email: %v\n", user.Email))
+				logger.Info(fmt.Sprintf("ID: %v\n", user.ID))
+				logger.Info(fmt.Sprintf("Username: %v\n", user.Username))
+				logger.Info(fmt.Sprintf("Created At: %v\n", user.CreatedAt.Time))
+			}
+
+			logger.Info("Successfully fetched all users")
 		}),
 	).Run()
 }

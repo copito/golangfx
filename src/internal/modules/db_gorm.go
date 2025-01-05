@@ -55,7 +55,8 @@ func NewDatabase(params DBParams) (DBResults, error) {
 	params.Lifecycle.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			params.Logger.Info("Database connection established")
-			return nil
+			err := sqlDB.Ping()
+			return err
 		},
 		OnStop: func(ctx context.Context) error {
 			params.Logger.Info("Closing database connection")
