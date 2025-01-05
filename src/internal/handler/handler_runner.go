@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	pb "github.com/copito/runner/idl_gen/runner/v1"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -26,9 +27,14 @@ func NewRunnerHandler(params CommonHandlerParams) GRPCHandlerInterface {
 }
 
 // Register registers the RunnerHandlers to the gRPC server.
-func (s *RunnerHandler) Register(server *grpc.Server) {
-	s.Logger.Info("registering handler", slog.String("handler", "runner"), slog.String("type", "grpc"))
+func (s *RunnerHandler) RegisterGRPC(server *grpc.Server) {
+	s.Logger.Info("registering GRPC handler", slog.String("handler", "runner"), slog.String("type", "grpc"))
 	pb.RegisterRunnerServiceServer(server, s)
+}
+
+func (s *RunnerHandler) RegisterGRPCGateway(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	s.Logger.Info("registering GRPC-Gateway handler", slog.String("handler", "runner"), slog.String("type", "grpc"))
+	return pb.RegisterRunnerServiceHandler(ctx, mux, conn)
 }
 
 func (s RunnerHandler) Ping(ctx context.Context, req *pb.PingRequest) (*pb.PingResponse, error) {

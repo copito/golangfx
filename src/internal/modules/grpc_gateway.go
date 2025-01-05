@@ -2,19 +2,17 @@ package modules
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
 
 	"github.com/copito/runner/src/internal/entities"
+	"github.com/copito/runner/src/internal/handler"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-
-	pb "github.com/copito/runner/idl_gen/runner/v1"
 )
 
 type GRPCGatewayParams struct {
@@ -23,6 +21,7 @@ type GRPCGatewayParams struct {
 	Lifecycle fx.Lifecycle
 	Logger    *slog.Logger
 	Config    *entities.Config
+	Handlers  []handler.GRPCHandlerInterface `group:"grpc_handlers"` // Collect all handlers from the group.
 
 	// adding as requirement to force order (dependency)
 	GRPCServer *grpc.Server
@@ -56,16 +55,15 @@ func NewGRPCGateway(params GRPCGatewayParams) (GRPCGatewayResults, error) {
 
 	mux := runtime.NewServeMux()
 
-	// TODO: expand this to accept multiple - not just one
-	// []func (ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error
-	err = pb.RegisterRunnerServiceHandler(context.Background(), mux, conn)
-	if err != nil {
-		params.Logger.Error(
-			"failed to register gateway gRPC-Gateway",
-			slog.String("handler", "RegisterRunnerServiceHandler"),
-			slog.Any("err", err),
-		)
-		return GRPCGatewayResults{}, errors.New("unable to register RegisterRunnerServiceHandler handler")
+	// Dynamically register all handlers
+	for _, handler := range params.Handlers {
+		if err := handler.RegisterGRPCGateway(context.Background(), mux, conn); err != nil {
+			params.Logger.Error(
+				"failed to register gRPC-Gateway handler",
+				slog.Any("err", err),
+			)
+			return GRPCGatewayResults{}, fmt.Errorf("failed to register gRPC service handler: %w", err)
+		}
 	}
 
 	server := &http.Server{

@@ -49,7 +49,7 @@ func NewGRPCServer(params GrpcParams) (GrpcResults, error) {
 
 	// Register all service handlers.
 	for _, handler := range params.Handlers {
-		handler.Register(server)
+		handler.RegisterGRPC(server)
 	}
 
 	// Start the server using Fx lifecycle hooks.
