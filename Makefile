@@ -95,6 +95,9 @@ clean:
 	@rm -f main
 
 # Live Reload
+watch_init:
+	@go install github.com/air-verse/air@latest;
+
 watch:
 	@if command -v air > /dev/null; then \
             air; \
@@ -170,5 +173,5 @@ sqlc_generate:
 	@sqlc generate -f ./sqlc.yaml
 
 
-.PHONY: all build run test clean watch docker_run docker_down itest migrate_init migrate_up migrate_up_one migrate_down migrate_create migrate_status migrate_reset install_dev_requirements
+.PHONY: all build run test clean watch_init watch docker_run docker_down itest migrate_init migrate_up migrate_up_one migrate_down migrate_create migrate_status migrate_reset install_dev_requirements sqlc_init sqlc_generate
 
