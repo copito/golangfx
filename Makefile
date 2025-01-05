@@ -160,5 +160,15 @@ migrate_reset:
 ########################################
 
 
+sqlc_init:
+	@echo "Initializing sqlc..."
+	@go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+
+
+sqlc_generate:
+	@echo "Generating sqlc code..."
+	@sqlc generate -f ./sqlc.yaml
+
+
 .PHONY: all build run test clean watch docker_run docker_down itest migrate_init migrate_up migrate_up_one migrate_down migrate_create migrate_status migrate_reset install_dev_requirements
 
