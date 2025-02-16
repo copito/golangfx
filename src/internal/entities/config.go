@@ -17,9 +17,10 @@ type Config struct {
 	} `mapstructure:"database"`
 
 	Backend struct {
-		HttpPort string `mapstructure:"http_port"`
-		GrpcPort string `mapstructure:"grpc_port"`
-		Tenancy  string `mapstructure:"tenancy"`
+		HttpPort    string `mapstructure:"http_port"`
+		GrpcPort    string `mapstructure:"grpc_port"`
+		Tenancy     string `mapstructure:"tenancy"`
+		Environment string `mapstructure:"environment"`
 	} `mapstructure:"backend"`
 
 	Kafka struct {
