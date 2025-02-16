@@ -3,6 +3,31 @@
 This project is supposed to be a proof of concept of building a clean golang service with the best architecture possible to ensure
 that it can be reused in the future by other projects. For simplicity sake it will be a microservice that interacts with databases (postgres and timescale), kafka (redpandas), GRPC, Kubernetes and more.
 
+## Prerequisites
+
+1. Golang Version Manager: recommend installing `asdf` or `gvm` (go versiion manager) to manage multiple golang version, but if you prefer to install go directly with the version specified in the [go.mod file](./go.mod)
+
+ASDF:
+
+```bash
+asdf plugin-add golang https://github.com/kennyp/asdf-golang.git
+asdf install golang 1.23.5
+asdf global golang 1.23.5
+```
+
+2. Just: recommend installing just in this project, which is an alternative to Makefile - which is a handy way to save and run project-specific commands. It can be downloaded directly from [Source](https://github.com/casey/just) or simply install using package manager:
+
+```bash
+sudo apt install just
+```
+
+3. Other internal dependencies: these can be downloaded via the just commands that end with `_init` - such as `proto_init`. All of the commands can be found under the [justfile](./justfile) and should be installed as needed based on what changes you are making (database migration, proto changes, sql generation for repositories, etc)
+
+- Proto: using [buf](https://buf.build/) as the tool of choice
+- SQL Generation: using [sqlc](https://sqlc.dev/) as the tool of choice
+- Database Migrations: using [goose](https://pressly.github.io/goose)
+- Hot Reloading: using [air](https://github.com/air-verse/air)
+
 ## Structure
 
 ```
