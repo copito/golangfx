@@ -8,6 +8,10 @@ import (
 
 	"github.com/copito/runner/src/internal/entities"
 	"github.com/copito/runner/src/internal/handler"
+	"github.com/copito/runner/src/pkg/middleware"
+	"github.com/copito/runner/src/pkg/middleware/auth"
+	authbypass "github.com/copito/runner/src/pkg/middleware/auth_bypass"
+	info "github.com/copito/runner/src/pkg/middleware/info"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
 )
@@ -45,7 +49,20 @@ func NewGRPCServer(params GrpcParams) (GrpcResults, error) {
 	}
 
 	// Create the gRPC server object.
-	server := grpc.NewServer()
+	authBypassInterceptor := authbypass.NewLocalBypassAuthInterceptor(params.Logger, params.Config)
+	authInterceptor := auth.NewAuthInterceptor(params.Config.Backend.Environment, params.Logger)
+	infoInterceptor := info.NewInfoInterceptor(params.Logger)
+
+	unaryInterceptors := grpc.UnaryInterceptor(
+		middleware.ChainUnaryInterceptors(
+			infoInterceptor.BuildUnaryInterceptor(),
+			authBypassInterceptor.BuildUnaryInterceptor(),
+			authInterceptor.BuildUnaryInterceptor(),
+		),
+	)
+
+	// Create the gRPC server object.
+	server := grpc.NewServer(unaryInterceptors)
 
 	// Register all service handlers.
 	for _, handler := range params.Handlers {
@@ -58,6 +75,7 @@ func NewGRPCServer(params GrpcParams) (GrpcResults, error) {
 			params.Logger.Info("serving gRPC on port " + backendConfig.GrpcPort)
 			go func() {
 				if err := server.Serve(listener); err != nil {
+					params.Logger.Error("failed to serve gRPC", slog.Any("err", err))
 					log.Fatalf("Failed to serve gRPC: %v", err)
 				}
 			}()
