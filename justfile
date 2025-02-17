@@ -28,7 +28,7 @@ default:
 
 
 example:
-	echo {{PROTO_FILES}}
+	echo {{PROTO_DIR}}
 
 ########################################
 ########### PROTO ######################
@@ -109,19 +109,19 @@ watch_init:
 
 watch:
 	if command -v air > /dev/null; then \
-            air; \
-            echo "Watching...";\
-        else \
-            read -p "Go's 'air' is not installed on your machine. Do you want to install it? [Y/n] " choice; \
-            if [ "$$choice" != "n" ] && [ "$$choice" != "N" ]; then \
-                go install github.com/air-verse/air@latest; \
-                air; \
-                echo "Watching...";\
-            else \
-                echo "You chose not to install air. Exiting..."; \
-                exit 1; \
-            fi; \
-        fi
+		air; \
+		echo "Watching...";\
+	else \
+		read -p "Go's 'air' is not installed on your machine. Do you want to install it? [Y/n] " choice; \
+		if [ "$$choice" != "n" ] && [ "$$choice" != "N" ]; then \
+			go install github.com/air-verse/air@latest; \
+			air; \
+			echo "Watching...";\
+		else \
+			echo "You chose not to install air. Exiting..."; \
+			exit 1; \
+		fi; \
+	fi
 
 ########################################
 ####### Migration commands   ###########
@@ -129,19 +129,19 @@ watch:
 
 migrate_init:
 	if command -v goose > /dev/null; then \
-            goose --version; \
-            echo "Goose initialized...";\
-        else \
-            read -p "Go's 'goose' is not installed on your machine. Do you want to install it? [Y/n] " choice; \
-            if [ "$$choice" != "n" ] && [ "$$choice" != "N" ]; then \
-                go install github.com/pressly/goose/v3/cmd/goose@latest; \
-                goose --version; \
-                echo "Goose installed and initialized...";\
-            else \
-                echo "You chose not to install goose. Exiting..."; \
-                exit 1; \
-            fi; \
-        fi
+		goose --version; \
+		echo "Goose initialized...";\
+	else \
+		read -p "Go's 'goose' is not installed on your machine. Do you want to install it? [Y/n] " choice; \
+		if [ "$$choice" != "n" ] && [ "$$choice" != "N" ]; then \
+			go install github.com/pressly/goose/v3/cmd/goose@latest; \
+			goose --version; \
+			echo "Goose installed and initialized...";\
+		else \
+			echo "You chose not to install goose. Exiting..."; \
+			exit 1; \
+		fi; \
+	fi
 
 migrate_up:
 	echo "Applying all migrations..."
