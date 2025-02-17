@@ -42,7 +42,9 @@ func (h *SwaggerHandler) Method() string {
 func (h *SwaggerHandler) ServeHTTP() runtime.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 		// Add swagger as route for http
-		sw := swagger.New("gRPC Gateway API", "/openapi/runner/v1/query.swagger.json", "/docs")
+		// All openapi's are combined into one called services.swagger.json
+		// sw := swagger.New("gRPC Gateway API", "/openapi/runner/v1/query.swagger.json", "/docs")
+		sw := swagger.New("gRPC Gateway API", "/openapi/services.swagger.json", "/docs")
 		sw.ServeHTTP(w, r)
 	}
 }

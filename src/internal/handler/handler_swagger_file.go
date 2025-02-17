@@ -44,8 +44,7 @@ func (h *SwaggerFileHandler) ServeHTTP() runtime.HandlerFunc {
 		// Resolve the correct absolute path to the openapi directory
 		openapiDir, err := filepath.Abs("../../../openapi")
 		if err != nil {
-			// panic("cannot find open api")
-			return
+			http.Error(w, "cannot find openapi path", 400)
 		}
 
 		// Serve OpenAPI JSON file properly

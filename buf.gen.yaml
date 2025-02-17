@@ -45,6 +45,8 @@ plugins:
   # OPENAPI generation
   - remote: buf.build/grpc-ecosystem/openapiv2
     out: openapi/
+    opt: allow_merge=true,merge_file_name=services,openapi_naming_strategy=fqn,include_package_in_tags=true
+    # More details: https://github.com/grpc-ecosystem/grpc-gateway/blob/main/protoc-gen-openapiv2/defs.bzl
 
 inputs:
   - directory: idl/proto
