@@ -18,10 +18,11 @@ import (
 type GRPCGatewayParams struct {
 	fx.In
 
-	Lifecycle fx.Lifecycle
-	Logger    *slog.Logger
-	Config    *entities.Config
-	Handlers  []handler.GRPCHandlerInterface `group:"grpc_handlers"` // Collect all handlers from the group.
+	Lifecycle          fx.Lifecycle
+	Logger             *slog.Logger
+	Config             *entities.Config
+	Handlers           []handler.GRPCHandlerInterface `group:"grpc_handlers"`       // Collect all handlers from the group.
+	AdditionalHandlers []handler.HttpHandlerInterface `group:"additional_handlers"` // Collect all handlers from the group.
 
 	// adding as requirement to force order (dependency)
 	GRPCServer *grpc.Server
@@ -64,6 +65,11 @@ func NewGRPCGateway(params GRPCGatewayParams) (GRPCGatewayResults, error) {
 			)
 			return GRPCGatewayResults{}, fmt.Errorf("failed to register gRPC service handler: %w", err)
 		}
+	}
+
+	// Add any additional handlers (non gRPC handlers)
+	for _, handler := range params.AdditionalHandlers {
+		mux.Handle(handler.Method(), handler.Pattern(), handler.ServeHTTP())
 	}
 
 	server := &http.Server{

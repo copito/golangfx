@@ -14,3 +14,11 @@ var HandlerModule = fx.Options(
 		// i.e. fx.Annotate(handler.NewGlobalHandler, fx.ResultTags(`group:"grpc_handlers"`)),
 	),
 )
+
+// Module provides all handlers as a group for Fx.
+var AdditionalHandlerModule = fx.Options(
+	fx.Provide(
+		fx.Annotate(handler.NewSwaggerFileHandler, fx.As(new(handler.HttpHandlerInterface)), fx.ResultTags(`group:"additional_handlers"`)),
+		fx.Annotate(handler.NewSwaggerHandler, fx.As(new(handler.HttpHandlerInterface)), fx.ResultTags(`group:"additional_handlers"`)),
+	),
+)
