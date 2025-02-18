@@ -10,6 +10,7 @@ import "check_transformation.proto";
 import "check_schedule.proto";
 import "check_notification.proto";
 import "check_source.proto";
+import "check_source_data.proto";
 import "check_metadata.proto";
 import "check_selector.proto";
 
@@ -18,36 +19,87 @@ import "check_selector.proto";
 // The Core Check Specification
 // ================================================================
 
+// message CheckSpec {
+//     // A unique identifier for the check.
+//     string uuid = 1;
+
+//     // A human-friendly name or description.
+//     string name = 2;
+
+//     CheckCategory category = 3;
+
+//     // The datasets this check applies to.
+//     repeated DatasetSelector dataset_selectors = 3;
+
+//     // The type of check (row_count, last_modified, etc)
+//     CheckType check_type = 4;
+
+//     // If the check uses a particular metric, specify it here (e.g., "row_count", "null_percentage").
+//     string metric = 5;
+
+//     // Optional transformation (e.g., a rolling diff) to be applied on the metric timeseries.
+//     Transformation transformation = 6;
+
+//     // The condition that must be met.
+//     Condition condition = 7;
+
+//     // The scheduling for this check.
+//     Schedule schedule = 8;
+
+//     // Notification details for alerting when a check fails.
+//     repeated Notification notifications = 9;
+
+//     // Whether this check is currently paused (can be toggled if failures persist).
+//     bool paused = 10;
+// }
+
+// Represents a node in the DAG.
+message DataNode {
+    string node_id = 1; // Unique identifier for the node.
+
+    // The data source for this node (only for leaf nodes).
+    optional SourceData source_data = 2;
+
+    // List of transformations applied sequentially to this node.
+    repeated Transformation transformations = 3;
+
+    // List of input nodes this node depends on.
+    repeated string input_node_ids = 4;
+}
+
+
+message ThresholdNotification {
+    // Threshold 
+    Threshold threshold = 1;
+
+    // Notification details for alerting when a check fails.
+    repeated Notification notifications = 2;
+}
+
 message CheckSpec {
     // A unique identifier for the check.
-    string id = 1;
+    string uuid = 1;
 
     // A human-friendly name or description.
     string name = 2;
 
-    // The datasets this check applies to.
-    repeated DatasetSelector dataset_selectors = 3;
-
+    CheckCategory category = 3;
+    
     // The type of check (row_count, last_modified, etc)
     CheckType check_type = 4;
 
-    // If the check uses a particular metric, specify it here (e.g., "row_count", "null_percentage").
-    string metric = 5;
-
-    // Optional transformation (e.g., a rolling diff) to be applied on the metric timeseries.
-    Transformation transformation = 6;
-
-    // The condition that must be met.
-    Condition condition = 7;
+    Source source = 5;
 
     // The scheduling for this check.
-    Schedule schedule = 8;
+    Schedule schedule = 6;
 
-    // Notification details for alerting when a check fails.
-    repeated Notification notifications = 9;
+    repeated DataNode data = 7;
+    string final_node_id = 8; // The ID of the final node to evaluate
+
+    repeated ThresholdNotification threshold_notification = 9;
 
     // Whether this check is currently paused (can be toggled if failures persist).
-    bool paused = 10;
+    bool is_paused = 10;
 }
 
 // ================================================================

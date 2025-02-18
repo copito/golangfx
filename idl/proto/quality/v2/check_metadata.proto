@@ -30,19 +30,3 @@ enum CheckType {
   CUSTOM_SQL = 4;
   // add more predefined types (e.g., accuracy, completeness, etc)
 }
-
-
-// ================================================================
-// Messages for Data Selection, Transformation, Condition, Schedule
-// ================================================================
-message DatasetSelector {
-  // One way to select a dataset. In practice, you might have multiple fields.
-  oneof selector {
-    // Direct selection by dataset unique identifier (URN or similar)
-    string dataset_id = 1;
-    // Select all datasets in a given schema
-    string schema_name = 2;
-    // A flag to indicate selection by usage (e.g., top used tables)
-    bool top_used = 3;
-  }
-}
