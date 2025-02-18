@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package quality.v2;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "google/api/annotations.proto";
+
+
+// =======================
+// Condition Value Type (Static, Dynamic, External)
+// =======================
+enum ThresholdValueType {
+    CONDITION_VALUE_UNSPECIFIED = 0;
+    SIMPLE = 1; // Simple static threshold (e.g., >= 400)
+    EXTERNAL = 2; // Uses an external service (e.g., anomaly detection)
+}
+
+// =======================
+// Condition Operators
+// =======================
+enum ThresholdOperator {
+    CONDITION_OPERATOR_UNSPECIFIED = 0;
+    EQUAL_TO = 1;
+    NOT_EQUAL_TO = 2;
+    GREATER_THAN = 3;
+    GREATER_THAN_OR_EQUAL_TO = 4;
+    LESS_THAN = 5;
+    LESS_THAN_OR_EQUAL_TO = 6;
+    BETWEEN = 7;
+    NOT_BETWEEN = 8;
+    IN = 9;
+    NOT_IN = 10;
+    MATCHES_REGEX = 11;
+    NOT_MATCHES_REGEX = 12;
+    ANY = 13;
+    ALL = 14;
+}
+
+
+// =======================
+// Condition Definition
+// =======================
+message Threshold {
+    ThresholdOperator operator = 1;   // Operator (e.g., >=, BETWEEN, ANY)
+    ThresholdValueType value_type = 2; // STATIC, DYNAMIC, EXTERNAL
+
+    oneof condition_details {
+        NumericCondition numeric_condition = 3;
+        StringCondition string_condition = 4;
+        BooleanCondition boolean_condition = 5;
+    }
+
+    bool is_auto_generated = 10;
+    string description = 11;
+}
+
+
+// =======================
+// Numeric Condition (Thresholds for Numeric Metrics)
+// =======================
+message NumericCondition {
+    oneof threshold {
+        double single_value = 1;  // For single value conditions (e.g., >= 400)
+        Range range = 2;          // For range-based conditions (e.g., BETWEEN 100 and 500)
+    }
+}
+
+// Range Message for Numeric Conditions
+message Range {
+    double min_value = 1; // Minimum value for range-based conditions
+    double max_value = 2; // Maximum value for range-based conditions
+}
+
+// =======================
+// String Condition (Regex, Inclusion Checks)
+// =======================
+message StringCondition {
+    oneof string_value {
+        string exact_match = 1; // Exact string match (e.g., "ERROR")
+        repeated string in_set = 2; // List of allowed values (e.g., IN ["A", "B", "C"])
+        string regex = 3; // Regex pattern (e.g., "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}")
+    }
+}
+
+// =======================
+// Boolean Condition (Logical Checks)
+// =======================
+message BooleanCondition {
+    bool expected_value = 1; // Check against a boolean condition (e.g., TRUE, FALSE)
+}
+
+
+
+
+
+

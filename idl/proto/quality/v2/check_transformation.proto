@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package quality.v2;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "google/api/annotations.proto";
+
+
+enum TransformationType {
+    TRANSFORMATION_TYPE_UNSPECIFIED = 0;
+    PREDEFINED = 1;
+    CUSTOM = 2;
+}
+
+enum PredefinedTransformationType {
+    PREDEFINED_TRANSFORMATION_TYPE_UNSPECIFIED = 0;
+    RAW = 1; // No transformation
+    DIFF = 2; // Delta (row count change)
+    ROLLING_MEAN = 3; // Rolling average
+    EXPONENTIAL_SMOOTHING = 4; // Smoothing function
+    NORMALIZATION = 5; // Normalize values
+    ZSCORE = 6; // Standardized Z-score
+    STEP_GRAPH = 7; // Step Graph
+}
+
+message TransformationParams {
+    string key = 1;
+    string value = 2;
+}
+
+message Transformation {
+
+    TransformationType type = 1; // e.g., "predefined", "custom"
+
+    // For simple timeseries-based transformations such as rolling diffs.
+    // e.g., "rolling_diff" with parameters might produce a delta series.
+    oneof transformation_details {
+        FilterTransformation filter = 2;
+        PredefinedTransformation predefined = 3;
+        CustomTransformation custom = 4;
+        ExternalTransformation external = 5;
+    }
+    
+    string output_name = 8;
+}
+
+
+// =======================
+// Filter Transformation
+// =======================
+message FilterTransformation {
+
+}
+
+
+// =======================
+// Pre-defined Transformation
+// =======================
+message PredefinedTransformation {
+    PredefinedTransformationType transformation = 1;
+    TransformationParams params = 2;
+}
+
+
+// =======================
+// Custom Transformation
+// =======================
+message CustomTransformation {
+    string name = 1; // transformation name
+    string query = 2;
+    // A list of key/value parameters as strings; you can later interpret these.
+    repeated TransformationParams params = 3;
+}
+
+// =======================
+// External Transformation (ML/Anomaly Detection)
+// =======================
+message ExternalTransformation {
+    string service_host = 1; // URL of external API
+    string endpoint = 2; // endpoint or method (gRPC)
+    map<string, string> parameters = 3; // API-specific parameters (e.g., model ID)
+    map<string, string> header = 4; // Additional header to be passed to service
+    string payload = 5;
+}

@@ -1,0 +1,166 @@
+syntax = "proto3";
+
+package quality.v2;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "google/api/annotations.proto";
+import "check_threshold.proto";
+import "check_transformation.proto";
+import "check_schedule.proto";
+import "check_notification.proto";
+import "check_source.proto";
+import "check_metadata.proto";
+import "check_selector.proto";
+
+
+// ================================================================
+// The Core Check Specification
+// ================================================================
+
+message CheckSpec {
+    // A unique identifier for the check.
+    string id = 1;
+
+    // A human-friendly name or description.
+    string name = 2;
+
+    // The datasets this check applies to.
+    repeated DatasetSelector dataset_selectors = 3;
+
+    // The type of check (row_count, last_modified, etc)
+    CheckType check_type = 4;
+
+    // If the check uses a particular metric, specify it here (e.g., "row_count", "null_percentage").
+    string metric = 5;
+
+    // Optional transformation (e.g., a rolling diff) to be applied on the metric timeseries.
+    Transformation transformation = 6;
+
+    // The condition that must be met.
+    Condition condition = 7;
+
+    // The scheduling for this check.
+    Schedule schedule = 8;
+
+    // Notification details for alerting when a check fails.
+    repeated Notification notifications = 9;
+
+    // Whether this check is currently paused (can be toggled if failures persist).
+    bool paused = 10;
+}
+
+// ================================================================
+// Results, including Timeseries Data for Visualization
+// ================================================================
+
+message TimeSeriesPoint {
+    google.protobuf.Timestamp timestamp = 1;
+    double value = 2;
+    // The threshold (static or dynamic) applicable at that timestamp.
+    double threshold_value = 3;
+}
+
+message CheckResult {
+    // Reference to the check that produced this result.
+    string check_id = 1;
+    // Whether the check passed or failed.
+    bool passed = 2;
+    google.protobuf.Timestamp timestamp = 3;
+    // An optional message detailing the result.
+    string message = 4;
+    // Timeseries data points for front-end visualization.
+    repeated TimeSeriesPoint timeseries = 5;
+}
+
+// ================================================================
+// Requests & Responses for the Data Quality Service RPCs
+// ================================================================
+
+message GetCheckRequest {
+    string check_id = 1;
+}
+
+message ListChecksRequest {
+    // Filter by dataset, check type, or by status.
+    string dataset_id = 1;
+    CheckType check_type = 2;
+    // Optionally only list checks that have failed recently.
+    bool only_failed = 3;
+    // Pagination fields.
+    int32 page_size = 4;
+    string page_token = 5;
+}
+
+message ListChecksResponse {
+    repeated CheckSpec checks = 1;
+    string next_page_token = 2;
+}
+
+message DeleteCheckRequest {
+    string check_id = 1;
+}
+
+message DeleteCheckResponse {
+    bool success = 1;
+}
+
+message RunChecksRequest {
+    // Optionally run specific checks by id (or all if empty).
+    repeated string check_ids = 1;
+}
+
+message RunChecksResponse {
+    repeated CheckResult results = 1;
+}
+
+message GetCheckTimeseriesRequest {
+    string check_id = 1;
+    google.protobuf.Timestamp start_time = 2;
+    google.protobuf.Timestamp end_time = 3;
+}
+
+message GetCheckTimeseriesResponse {
+    // A check result enriched with timeseries data.
+    CheckResult check_result = 1;
+}
+
+// ================================================================
+// Data Quality Service
+// ================================================================
+
+service DataQualityService {
+    // Create a new quality check.
+    rpc CreateCheck(CheckSpec) returns (CheckSpec) {
+        option (google.api.http) = {
+            post: "/api/v2/check"
+            body: "*"
+        };
+    }
+
+    // Get an existing quality check by id.
+    rpc GetCheck(GetCheckRequest) returns (CheckSpec) {
+        option (google.api.http) = {
+            get: "/api/v2/check/{check_id}"
+        };
+    }
+
+    // List checks with optional filters.
+    rpc ListChecks(ListChecksRequest) returns (ListChecksResponse) {
+        option (google.api.http) = {
+            get: "/api/v2/checks/"
+        };
+    }
+
+    // Update (or pause/resume) a check.
+    rpc UpdateCheck(CheckSpec) returns (CheckSpec);
+
+    // Delete a check.
+    rpc DeleteCheck(DeleteCheckRequest) returns (DeleteCheckResponse);
+
+    // Run one or more checks immediately (in addition to scheduled runs).
+    rpc RunChecks(RunChecksRequest) returns (RunChecksResponse);
+
+    // Retrieve timeseries data for a check.
+    rpc GetCheckTimeseries(GetCheckTimeseriesRequest) returns (GetCheckTimeseriesResponse);
+}

@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package quality.v2;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "google/api/annotations.proto";
+
+
+enum SourceType {
+    SOURCE_UNSPECIFIED = 0;
+    DATASET = 1;
+    // API = 2;
+    // FILE = 3;
+}
+
+message Source {
+    SourceType type = 1;
+
+    // Different notification types have different parameters
+    oneof source_details {
+        DatasetSource dataset = 2;
+    }
+
+}
+
+// =======================
+// Dataset Source
+// =======================
+message DatasetSource {
+    string dataset_uuid = 1;
+    repeated string dataset_product = 2;
+}
+
+
+
+

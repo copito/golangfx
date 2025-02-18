@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package quality.v2;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "google/api/annotations.proto";
+
+enum ScheduleType {
+    SCHEDULE_UNSPECIFIED = 0;
+    INTERVAL = 1; // On interval
+    ON_EVENT = 2; // event (that contains data)
+    ON_CHANGE_DATA_CAPTURE = 3; // event (that contains data)
+}
+
+// =======================
+// Calendar-Based Exclusions
+// =======================
+message Exclusion {
+    string calendar_name = 1; // e.g., "XPRES" (a named holiday calendar)
+    repeated google.protobuf.Timestamp exclusion_datetime = 2;
+}
+
+
+message Schedule {
+    ScheduleType type = 1;
+
+    // For interval schedules, an interval string (e.g., "6 hours")
+    oneof schedule_details {
+        IntervalSchedule interval = 2;
+        OnEventSchedule on_event = 3;
+        OnChangeDataCaptureSchedule on_cdc = 3;
+    }
+
+    google.protobuf.Timestamp start_datetime = 4; // default is day when check is created
+    optional google.protobuf.Timestamp end_datetime = 5; // optional if want to run forever
+
+    // Named calendar-based exclusions (e.g., XMAS+ includes Christmas, Easter, etc.)
+    repeated Exclusion exclusions = 6;
+}
+
+
+// =======================
+// Interval Schedule
+// =======================
+message IntervalSchedule {
+    string cron_expression = 1; // If more advanced scheduling is needed (e.g., "0 9 * * 1" for every Monday at 9 AM)
+    
+    optional bool last_day_of_month = 2; // If true, runs on the last day of the month.
+    optional int32 nth_weekday_of_month = 3; // e.g., "last Friday of the month" (use negative index for last, e.g., -1 for last week).
+    bool run_on_create = 4; // if you want to run once before the schedule hits
+}
+
+
+// =======================
+// On Event Schedule
+// =======================
+message OnEventSchedule {
+    string event_type = 1; // The table that triggers the event.
+    optional string data_source = 2; // Optional filter condition (e.g., "table_abc").
+}
+
+// =======================
+// On Change Data Capture Schedule
+// =======================
+message OnChangeDataCaptureSchedule {
+    string topic = 1; // The topic for the table.
+    repeated string operation = 2; // Types of data changes ["i" (insert), "u" (update), "d" (delete), "c" (create)].
+    // optional string filter_condition = 3; // Optional filter condition (e.g., "event_type = 'INSERT' AND column_x > 100").
+}
+
+

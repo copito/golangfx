@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package quality.v2;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "google/api/annotations.proto";
+
+
+enum NotificationType {
+    NOTIFICATION_UNSPECIFIED = 0;
+    EMAIL = 1;
+    SLACK = 2;
+    PAGERDUTY = 3;
+    JIRA = 4;
+    WEBHOOK = 5;
+}
+
+message Notification {
+    NotificationType type = 1;
+
+    // A Jinja or similar templated message
+    string message = 2;
+
+    // Alerting and execution pause thresholds
+    int32 alert_pause_threshold = 3;
+    int32 check_pause_threshold = 4;
+
+    // Different notification types have different parameters
+    oneof notification_details {
+        EmailNotification email = 5;
+        SlackNotification slack = 6;
+        PagerDutyNotification pagerduty = 7;
+        JiraNotification jira = 8;
+        WebhookNotification webhook = 9;
+    }
+}
+
+// =======================
+// Email Notification
+// =======================
+message EmailNotification {
+    repeated string recipients = 1;  // To addresses
+    repeated string cc = 2;          // CC addresses
+    repeated string bcc = 3;         // BCC addresses
+    string subject = 4;
+    // string from = 5;              // Sender email (always same service sender)
+}
+
+// =======================
+// Slack Notification
+// =======================
+message SlackNotification {
+    string slack_id = 1;            // User ID if direct message
+    string slack_channel = 2;       // Channel name if channel notification
+    string slack_group = 3;         // Group ID (for private groups)
+    string bot_token = 4;           // Optional bot token if needed for API calls
+}
+
+// =======================
+// PagerDuty Notification
+// =======================
+message PagerDutyNotification {
+    string service_key = 1;   // PagerDuty API key
+    string incident_url = 2;  // URL to create or update incidents
+}
+
+// =======================
+// Jira Notification
+// =======================
+message JiraNotification {
+    string project_key = 1;      // Jira project key
+    string issue_type = 2;       // Type of issue (e.g., "Bug", "Task")
+    string assignee = 3;         // Assignee username
+    repeated string watchers = 4; // Optional watchers for the issue
+}
+
+// =======================
+// Webhook Notification
+// =======================
+message WebhookNotification {
+    string url = 1;          // Webhook endpoint URL
+    string http_method = 2;  // "POST", "PUT", etc.
+    map<string, string> headers = 3; // Custom headers for the webhook
+    string payload_template = 4; // Jinja-based templated payload
+}

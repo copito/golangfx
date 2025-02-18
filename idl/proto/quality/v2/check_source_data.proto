@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package quality.v2;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "google/api/annotations.proto";
+
+
+enum SourceDataType {
+    SOURCE_UNSPECIFIED = 0;
+    METRIC_STORE = 1;
+    CHANGE_DATA_CAPTURE = 2;
+    QUERY = 3;
+}
+
+enum MetricStoreEnvironmentType {
+    ENVIRONMENT_UNSPECIFIED = 0;
+    LOCAL = 1;
+    DEV = 2;
+    UAT = 3;
+    PROD = 4;
+}
+
+enum PlatformType {
+    PLATFORM_UNSPECIFIED = 0;
+    SNOWFLAKE = 1;
+    POSTGRES = 2;
+    BIGQUERY = 3;
+    REDSHIFT = 4;
+    MYSQL = 5;
+    SQLSERVER = 6;
+    TRINO = 7;
+    PRESTO = 8;
+    MARIADB = 8;
+}
+
+message QueryParams {
+    string key = 1;
+    string value = 2;
+}
+
+
+message SourceData {
+    SourceDataType type = 1;
+
+    // Different notification types have different parameters
+    oneof source_details {
+        MetricStoreSourceData metric_store = 2;
+        ChangeDataCaptureSourceData cdc = 3;
+        QuerySourceData pull = 3;
+    }
+
+}
+
+// =======================
+// Metric Store Source Data
+// =======================
+message MetricStoreSourceData {
+    string metric_name = 1; // Name of the metric (e.g., "row_count", "cpu_usage")
+    MetricStoreEnvironmentType environment = 2; // local, dev, uat, prod
+    optional string metric_instance = 3;
+    optional google.protobuf.Timestamp lookback_start = 4; // Start timestamp for historical data pull
+    optional google.protobuf.Timestamp lookback_end = 5; // End timestamp (optional, default to now)
+}
+
+// =======================
+// Change Data Capture (CDC) Source Data
+// =======================
+message ChangeDataCaptureSourceData {
+    string source_topic = 1; // Topic being monitored for changes
+    string connection_id = 2; // ID of the database connection being used for CDC
+}
+
+// TODO: decide to always keep the running in other service
+// or run in data dq service and push metric
+// =======================
+// Query Source Data
+// =======================
+message QuerySourceData {
+    PlatformType source_platform = 1; // E.g., "Snowflake", "PostgreSQL", "BigQuery"
+    MetricStoreEnvironmentType environment = 2; // local, dev, uat, prod
+    string query = 3; // SQL or API query to pull data
+    repeated QueryParams params = 4;
+    optional string connection_id = 5; // Connection reference (if needed)
+}
+

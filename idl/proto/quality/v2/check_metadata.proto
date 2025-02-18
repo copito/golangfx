@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package quality.v2;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "google/api/annotations.proto";
+
+// ================================================================
+// Enums for Check Types, Conditions, Schedule and Notifications
+// ================================================================
+
+// Categories for grouping checks.
+enum CheckCategory {
+  CATEGORY_UNSPECIFIED = 0;
+  ACCURACY = 1;
+  VALIDITY = 2;
+  COMPLETENESS = 3;
+  TIMELINESS = 4;
+  UNIQUENESS = 5;
+  CONSISTENCY = 6;
+  CUSTOM_CATEGORY = 10;
+}
+
+enum CheckType {
+  CHECK_TYPE_UNSPECIFIED = 0;
+  ROW_COUNT = 1;
+  LAST_MODIFIED = 2;
+  PERCENT_NULLS = 3;
+  CUSTOM_SQL = 4;
+  // add more predefined types (e.g., accuracy, completeness, etc)
+}
+
+
+// ================================================================
+// Messages for Data Selection, Transformation, Condition, Schedule
+// ================================================================
+message DatasetSelector {
+  // One way to select a dataset. In practice, you might have multiple fields.
+  oneof selector {
+    // Direct selection by dataset unique identifier (URN or similar)
+    string dataset_id = 1;
+    // Select all datasets in a given schema
+    string schema_name = 2;
+    // A flag to indicate selection by usage (e.g., top used tables)
+    bool top_used = 3;
+  }
+}
