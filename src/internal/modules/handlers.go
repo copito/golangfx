@@ -8,6 +8,7 @@ import (
 // Module provides all handlers as a group for Fx.
 var HandlerModule = fx.Options(
 	fx.Provide(
+		fx.Annotate(handler.NewHealthCheckHandler, fx.ResultTags(`group:"grpc_handlers"`)),
 		fx.Annotate(handler.NewRunnerHandler, fx.ResultTags(`group:"grpc_handlers"`)),
 		// Add other handlers here using fx.Annotate.
 		// i.e. fx.Annotate(handler.NewBuilderHandler, fx.ResultTags(`group:"grpc_handlers"`)),
