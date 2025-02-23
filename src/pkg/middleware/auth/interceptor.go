@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"strings"
 
+	"github.com/copito/runner/src/internal/entities"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -22,8 +23,8 @@ type AuthInterceptor struct {
 	authProvider AuthProvider
 }
 
-func NewAuthInterceptor(env string, logger *slog.Logger) *AuthInterceptor {
-	if env == "local" {
+func NewAuthInterceptor(logger *slog.Logger, config *entities.Config) *AuthInterceptor {
+	if config.Backend.Environment == "local" {
 		provider := NewLocalAuthProvider(logger)
 		return &AuthInterceptor{authProvider: provider, logger: logger}
 	} else {
@@ -76,7 +77,7 @@ func (a AuthInterceptor) BuildUnaryInterceptor() grpc.UnaryServerInterceptor {
 
 		// Add user to context
 		// ctx = middleware.AppendToInterceptContext(ctx, "user", []string{user})
-		ctx = context.WithValue(ctx, "username", user) //go:lint SA1029
+		ctx = context.WithValue(ctx, "username", user)
 
 		// Run function
 		m, err := handler(ctx, req)
