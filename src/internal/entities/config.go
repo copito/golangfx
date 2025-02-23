@@ -6,6 +6,7 @@ type Config struct {
 	Global struct {
 		Version string `mapstructure:"version"`
 		Author  string `mapstructure:"author"`
+		Service string `mapstructure:"service"`
 	} `mapstructure:"global"`
 
 	Database struct {
@@ -21,6 +22,11 @@ type Config struct {
 		GrpcPort    string `mapstructure:"grpc_port"`
 		Tenancy     string `mapstructure:"tenancy"`
 		Environment string `mapstructure:"environment"`
+
+		OpenTelemetry struct {
+			Type              string `mapstructure:"type"`
+			CollectorEndpoint string `mapstructure:"collector_endpoint"`
+		} `mapstructure:"open_telemetry"`
 	} `mapstructure:"backend"`
 
 	Kafka struct {

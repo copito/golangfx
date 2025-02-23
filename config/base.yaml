@@ -1,6 +1,7 @@
 global:
   version: "0.1.0"
   author: "Copito"
+  service: "api-service"
 
 # Setting up api database connection
 database:
@@ -16,6 +17,9 @@ backend:
   grpc_port: ":50001"
   tenancy: "company/development"
   environment: "local"
+  open_telemetry:
+    type: "STDOUT" # STDOUT, HTTP, GRPC
+    collector_endpoint: "http://example:4317"
 
 # Setting up Kafka product
 kafka:
