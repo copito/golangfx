@@ -1,0 +1,459 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Runner API",
+    "description": "API for example",
+    "version": "1.0",
+    "contact": {
+      "name": "My team",
+      "url": "https://runner-rest.example.com/docs"
+    }
+  },
+  "tags": [
+    {
+      "name": "runner.v1.RunnerService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v1/engines": {
+      "get": {
+        "summary": "Get available query engines",
+        "operationId": "RunnerService_GetAvailableEngines",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/runner.v1.GetAvailableEnginesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/google.rpc.Status"
+            }
+          }
+        },
+        "tags": [
+          "runner.v1.RunnerService"
+        ]
+      }
+    },
+    "/api/v1/job/async": {
+      "post": {
+        "summary": "Submit query to the service asynchonously",
+        "operationId": "RunnerService_SubmitQueryAsync",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/runner.v1.SubmitQueryAsyncResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/google.rpc.Status"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/runner.v1.SubmitQueryRequest"
+            }
+          }
+        ],
+        "tags": [
+          "runner.v1.RunnerService"
+        ]
+      }
+    },
+    "/api/v1/job/sync": {
+      "post": {
+        "summary": "Submit query to the service synchonously",
+        "operationId": "RunnerService_SubmitQuery",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/runner.v1.QueryResultResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/google.rpc.Status"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/runner.v1.SubmitQueryRequest"
+            }
+          }
+        ],
+        "tags": [
+          "runner.v1.RunnerService"
+        ]
+      }
+    },
+    "/api/v1/job/{jobUuid}/data": {
+      "get": {
+        "summary": "Gets query result if query has been completed",
+        "operationId": "RunnerService_GetQueryResult",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/runner.v1.QueryResultResponse"
+                },
+                "error": {
+                  "$ref": "#/definitions/google.rpc.Status"
+                }
+              },
+              "title": "Stream result of runner.v1.QueryResultResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/google.rpc.Status"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "jobUuid",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "runner.v1.RunnerService"
+        ]
+      }
+    },
+    "/api/v1/job/{jobUuid}/status": {
+      "get": {
+        "summary": "Check the query status submitted (or done)",
+        "operationId": "RunnerService_CheckQueryStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/runner.v1.CheckQueryStatusResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/google.rpc.Status"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "jobUuid",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "runner.v1.RunnerService"
+        ]
+      }
+    },
+    "/api/v1/ping": {
+      "get": {
+        "summary": "Testing function for Runner Service",
+        "operationId": "RunnerService_Ping",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/runner.v1.PingResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/google.rpc.Status"
+            }
+          }
+        },
+        "tags": [
+          "runner.v1.RunnerService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "common.v1.ComparisonOperator": {
+      "type": "string",
+      "enum": [
+        "COMPARISON_OPERATOR_UNSPECIFIED",
+        "COMPARISON_OPERATOR_EQUAL_TO",
+        "COMPARISON_OPERATOR_NOT_EQUAL_TO",
+        "COMPARISON_OPERATOR_GREATER_THAN",
+        "COMPARISON_OPERATOR_GREATER_THAN_OR_EQUAL_TO",
+        "COMPARISON_OPERATOR_LESS_THAN",
+        "COMPARISON_OPERATOR_LESS_THAN_OR_EQUAL_TO",
+        "COMPARISON_OPERATOR_MATCHES_REGEX",
+        "COMPARISON_OPERATOR_NOT_MATCHES_REGEX"
+      ],
+      "default": "COMPARISON_OPERATOR_UNSPECIFIED"
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "google.protobuf.NullValue": {
+      "type": "string",
+      "enum": [
+        "NULL_VALUE"
+      ],
+      "default": "NULL_VALUE",
+      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\nThe JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
+    },
+    "google.rpc.Status": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    },
+    "runner.v1.CheckQueryStatusResponse": {
+      "type": "object",
+      "properties": {
+        "job": {
+          "$ref": "#/definitions/runner.v1.QueryJob"
+        }
+      }
+    },
+    "runner.v1.GetAvailableEnginesResponse": {
+      "type": "object",
+      "properties": {
+        "engines": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "runner.v1.JobStatus": {
+      "type": "string",
+      "enum": [
+        "JOB_STATUS_UNSPECIFIED",
+        "JOB_STATUS_SUBMITTED",
+        "JOB_STATUS_QUEUED",
+        "JOB_STATUS_WORKER_STARTED",
+        "JOB_STATUS_RUNNING",
+        "JOB_STATUS_FAILED",
+        "JOB_STATUS_SUCCESSFUL",
+        "JOB_STATUS_RETRIEVING_DATA",
+        "JOB_STATUS_WORKER_STOPPED"
+      ],
+      "default": "JOB_STATUS_UNSPECIFIED",
+      "description": "Job Status refers to the current state in which the job query is in\nThis helps determine if the query has been send, received by the worker\nand the worker is ready to receive the results."
+    },
+    "runner.v1.JobType": {
+      "type": "string",
+      "enum": [
+        "JOB_TYPE_UNSPECIFIED",
+        "JOB_TYPE_SYNC",
+        "JOB_TYPE_ASYNC"
+      ],
+      "default": "JOB_TYPE_UNSPECIFIED",
+      "title": "Job Type defines what type of synchronicity does the job expect\nthe results to be returned in (SYNC / ASYNC), where the async\nroute should be the default to avoid tieing worker with client (due to scalability)"
+    },
+    "runner.v1.PingResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "runner.v1.QueryJob": {
+      "type": "object",
+      "properties": {
+        "jobUuid": {
+          "type": "string",
+          "readOnly": true
+        },
+        "reference": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/runner.v1.JobStatus"
+        },
+        "jobType": {
+          "$ref": "#/definitions/runner.v1.JobType",
+          "title": "i.e. SYNC"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "adjustedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "title": "QueryJob represents"
+    },
+    "runner.v1.QueryParams": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "description": "This is a list of key value pairs (dictionary) that will be passed to the query,\nso that the templating engine can add these to the query or modify the templated\nquery before being run by query engine."
+    },
+    "runner.v1.QueryResultMetadata": {
+      "type": "object",
+      "properties": {
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "i.e. [\"uuid\", \"price\", \"effective_date\", \"created_at\"]"
+        },
+        "dataTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "i.e. [\"string\", \"float\", \"date\", \"timestamp\"]"
+        },
+        "rowCount": {
+          "type": "string",
+          "title": "i.e. 500"
+        }
+      },
+      "description": "This represents the metadata of a query result, which includes\ncolumn names and data types. This is used to inform the client\nabout the structure of the data they are receiving."
+    },
+    "runner.v1.QueryResultResponse": {
+      "type": "object",
+      "properties": {
+        "job": {
+          "$ref": "#/definitions/runner.v1.QueryJob"
+        },
+        "data": {
+          "type": "string"
+        },
+        "jobType": {
+          "$ref": "#/definitions/runner.v1.JobType"
+        },
+        "resultMetadata": {
+          "$ref": "#/definitions/runner.v1.QueryResultMetadata",
+          "title": "i.e. {'columns': [], 'data_types': []}"
+        },
+        "engineMetadata": {
+          "type": "object",
+          "title": "i.e. {'execution_time_in_sec': 2.33, 'traceback': false, ...}"
+        }
+      }
+    },
+    "runner.v1.SubmitQueryAsyncResponse": {
+      "type": "object",
+      "properties": {
+        "job": {
+          "$ref": "#/definitions/runner.v1.QueryJob"
+        },
+        "pullScheduleInMs": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "runner.v1.SubmitQueryRequest": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "engine": {
+          "type": "string"
+        },
+        "params": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/runner.v1.QueryParams"
+          }
+        },
+        "jobType": {
+          "$ref": "#/definitions/runner.v1.JobType"
+        },
+        "operator": {
+          "$ref": "#/definitions/common.v1.ComparisonOperator"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "BearerAuth": {
+      "type": "apiKey",
+      "description": "Authentication token with Bearer prefix",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ]
+}
