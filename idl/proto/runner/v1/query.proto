@@ -2,9 +2,12 @@ syntax = "proto3";
 
 package runner.v1;
 
+import "buf/validate/validate.proto";
+import "google/api/field_behavior.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/struct.proto";
 import "google/api/annotations.proto";
+import "common/v1/operators.proto";
 
 
 // Job Status refers to the current state in which the job query is in
@@ -50,12 +53,33 @@ message QueryResultMetadata {
 
 // QueryJob represents
 message QueryJob {
-    string job_uuid = 1;
-    string reference = 2;
-    JobStatus status = 3;
-    JobType job_type = 4; // i.e. SYNC
+    string job_uuid = 1 [
+        (buf.validate.field).string.uuid = true,
+        (google.api.field_behavior) = OUTPUT_ONLY
+    ];
+    string reference = 2 [
+        (buf.validate.field).string.pattern = "[a-zA-Z0-9_ ]+",
+        (buf.validate.field).string.min_len = 1,
+        (buf.validate.field).string.max_len = 1000
+    ];
+    JobStatus status = 3 [(buf.validate.field).enum.defined_only = true];
+    JobType job_type = 4 [(buf.validate.field).enum.defined_only = true]; // i.e. SYNC
+
+    repeated string tags = 5 [
+        (buf.validate.field).repeated.min_items = 0,
+        (buf.validate.field).repeated.max_items = 10,
+        (buf.validate.field).repeated.unique = true
+    ];
     
-    google.protobuf.Timestamp created_at = 5;
+    google.protobuf.Timestamp created_at = 6;
+    google.protobuf.Timestamp adjusted_at = 7;
+
+    option (buf.validate.message).cel = {
+        id: "query_job.adjusted_at.gte.created_at"
+        message: "End date must be greated than or equal to Start Date"
+        expression:
+            "this.adjusted_at == null || this.adjusted_at == null || this.adjusted_at >= created_at"
+    };
 }
 
 // Ping Command
@@ -75,7 +99,9 @@ message SubmitQueryRequest {
     string engine = 2;
     repeated QueryParams params = 3;
     JobType job_type = 4;
-    google.protobuf.Timestamp created_at = 5;
+
+    common.v1.ComparisonOperator operator = 5;
+    google.protobuf.Timestamp created_at = 6;
 }
 
 message QueryResultResponse {

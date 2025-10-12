@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package runner.v1;
+
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+    info: {
+        title: "Runner API";
+        version: "1.0";
+        description: "API for example";
+        contact: {
+            name: "My team";
+            url: "https://runner-rest.example.com/docs";
+        }
+    }
+
+    security_definitions: {
+        security: {
+            key: "BearerAuth";
+            value: {
+                type: TYPE_API_KEY;
+                in: IN_HEADER;
+                name: "Authorization";
+                description: "Authentication token with Bearer prefix";
+            }
+        }
+    }
+    security: [
+        {
+            security_requirement: {
+                key: "BearerAuth";
+                value: {};
+            }
+        }
+    ]
+};
