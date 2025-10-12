@@ -14,8 +14,10 @@ import (
 	info "github.com/copito/runner/src/pkg/middleware/info"
 	"github.com/copito/runner/src/pkg/middleware/limiter"
 	"github.com/copito/runner/src/pkg/middleware/logging"
-	"github.com/copito/runner/src/pkg/middleware/metrics"
+
+	// "github.com/copito/runner/src/pkg/middleware/metrics"
 	"github.com/copito/runner/src/pkg/middleware/recovery"
+	"github.com/copito/runner/src/pkg/middleware/tracer"
 	"github.com/copito/runner/src/pkg/middleware/validate"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/selector"
 	"go.uber.org/fx"
@@ -23,17 +25,22 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+
+	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
 // Params contains the dependencies for creating the gRPC server.
 type GrpcParams struct {
 	fx.In
 
-	Lifecycle   fx.Lifecycle
-	Logger      *slog.Logger
-	Config      *entities.Config
-	MetricStore *entities.MetricStore
-	Handlers    []handler.GRPCHandlerInterface `group:"grpc_handlers"` // Collect all handlers from the group.
+	Lifecycle     fx.Lifecycle
+	Logger        *slog.Logger
+	Config        *entities.Config
+	MetricStore   *entities.MetricStore
+	MetricServer  *grpcprom.ServerMetrics
+	TraceProvider *sdktrace.TracerProvider
+	Handlers      []handler.GRPCHandlerInterface `group:"grpc_handlers"` // Collect all handlers from the group.
 }
 
 // Results is the output of the gRPC server module.
@@ -65,7 +72,7 @@ func NewGRPCServer(params GrpcParams) (GrpcResults, error) {
 	loggingInterceptor := logging.NewLoggingInterceptor(params.Logger, params.Config)
 	limiterInterceptor := limiter.NewLimiterInterceptor(params.Logger)
 	recoveryInterceptor := recovery.NewRecoveryInterceptor(params.Logger, params.MetricStore)
-	metricsInterceptor := metrics.NewMetricInterceptor(params.Logger, params.Config, params.MetricStore)
+	metricsInterceptor := tracer.NewTracerInterceptor(params.Logger, params.Config, params.MetricServer) // metrics.NewMetricInterceptor(params.Logger, params.Config, params.MetricStore)
 	validator := validate.NewProtoValidatorInterceptor(params.Logger)
 
 	unaryInterceptors := grpc.UnaryInterceptor(
@@ -116,6 +123,10 @@ func NewGRPCServer(params GrpcParams) (GrpcResults, error) {
 	params.Lifecycle.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			params.Logger.Info("serving gRPC on port " + backendConfig.GrpcPort)
+
+			// REQUIRED TO INITIALIZE METRICS
+			params.MetricServer.InitializeMetrics(server)
+
 			go func() {
 				if err := server.Serve(listener); err != nil {
 					params.Logger.Error("failed to serve gRPC", slog.Any("err", err))
