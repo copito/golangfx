@@ -16,6 +16,8 @@ import (
 	"github.com/copito/runner/src/pkg/middleware/logging"
 	"github.com/copito/runner/src/pkg/middleware/metrics"
 	"github.com/copito/runner/src/pkg/middleware/recovery"
+	"github.com/copito/runner/src/pkg/middleware/validate"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/selector"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -64,16 +66,22 @@ func NewGRPCServer(params GrpcParams) (GrpcResults, error) {
 	limiterInterceptor := limiter.NewLimiterInterceptor(params.Logger)
 	recoveryInterceptor := recovery.NewRecoveryInterceptor(params.Logger, params.MetricStore)
 	metricsInterceptor := metrics.NewMetricInterceptor(params.Logger, params.Config, params.MetricStore)
+	validator := validate.NewProtoValidatorInterceptor(params.Logger)
 
 	unaryInterceptors := grpc.UnaryInterceptor(
 		middleware.ChainUnaryInterceptors(
 			recoveryInterceptor.BuildUnaryInterceptor(),
+			selector.UnaryServerInterceptor(
+				loggingInterceptor.BuildUnaryInterceptor(),
+				selector.MatchFunc(loggingInterceptor.ExecuteInterceptor),
+			),
 			loggingInterceptor.BuildUnaryInterceptor(),
 			infoInterceptor.BuildUnaryInterceptor(),
 			limiterInterceptor.BuildUnaryInterceptor(),
 			metricsInterceptor.BuildUnaryInterceptor(),
 			authBypassInterceptor.BuildUnaryInterceptor(),
 			authInterceptor.BuildUnaryInterceptor(),
+			validator.BuildUnaryInterceptor(),
 		),
 	)
 

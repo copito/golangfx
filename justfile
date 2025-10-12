@@ -48,7 +48,7 @@ proto_init:
 proto:
 	buf dep update {{PROTO_DIR}}
 	buf generate
-	go get google.golang.org/grpc && go get github.com/grpc-ecosystem/grpc-gateway/v2/runtime
+	go get google.golang.org/grpc && go get github.com/grpc-ecosystem/grpc-gateway/v2/runtime && go get buf.build/go/protovalidate
 	go mod tidy
 
 clean_proto:
@@ -177,7 +177,7 @@ sqlc_init:
 	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
 
-sqlc_generate:
+repo:
 	echo "Generating sqlc code..."
 	sqlc generate -f ./sqlc.yaml
 
