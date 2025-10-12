@@ -14,7 +14,8 @@ modules:
 # There will be a single buf.lock file produced, which lives alongside this buf.yaml.
 deps:
   - buf.build/googleapis/googleapis
-  # - buf.build/grpc/grpc
+  - buf.build/bufbuild/protovalidate
+  - buf.build/grpc-ecosystem/grpc-gateway
 
 lint:
   use:
