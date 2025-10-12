@@ -3,6 +3,10 @@ global:
   author: "Copito"
   service: "api-service"
 
+logger:
+  type: "JSON"
+  level: "INFO"
+
 # Setting up api database connection
 database:
   type: postgres
@@ -19,7 +23,8 @@ backend:
   environment: "local"
   open_telemetry:
     type: "STDOUT" # STDOUT, HTTP, GRPC
-    collector_endpoint: "http://example:4317"
+    collector_endpoint: "alloy:4317"
+    sampling_rate: 0.01
 
 # Setting up Kafka product
 kafka:

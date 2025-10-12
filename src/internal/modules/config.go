@@ -2,8 +2,8 @@ package modules
 
 import (
 	"fmt"
-	"log/slog"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/copito/runner/src/internal/entities"
@@ -13,8 +13,6 @@ import (
 
 type ConfigParams struct {
 	fx.In
-
-	Logger *slog.Logger
 }
 
 type ConfigResult struct {
@@ -23,24 +21,39 @@ type ConfigResult struct {
 	Config *entities.Config
 }
 
-func NewConfig(params ConfigParams) (ConfigResult, error) {
-	params.Logger.Info("setting up Config module (with viper)...")
+func isFile(path string) bool {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return !fileInfo.IsDir()
+}
 
+func NewConfig(params ConfigParams) (ConfigResult, error) {
 	// Set the default configuration file name and path
 	defaultConfigName := "base"
 	defaultConfigPath := "config/"
 
 	// Load the configuration file name and path from environment variables if set
+	var configFileName string
 	configPath := os.Getenv("CONFIG_PATH")
+
 	if configPath == "" {
 		configPath = defaultConfigPath
-		params.Logger.Debug("No config path provided, using default", slog.String("config_path", configPath))
+		configFileName = defaultConfigName
 	} else {
-		params.Logger.Debug("Using provided config path", slog.String("config_path", configPath))
+		if isFile(configPath) {
+			configFileNameWithExt := filepath.Base(configPath)
+			configFileName = strings.TrimSuffix(configFileNameWithExt, filepath.Ext(configFileNameWithExt))
+			configPath = filepath.Dir(configPath)
+		} else {
+			configFileName = defaultConfigName
+			configPath = filepath.Dir(configPath)
+		}
 	}
 
 	// Initialize Viper
-	viper.SetConfigName(defaultConfigName)
+	viper.SetConfigName(configFileName)
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(configPath)
 	viper.AddConfigPath(".") // fallback to current directory
@@ -65,8 +78,6 @@ func NewConfig(params ConfigParams) (ConfigResult, error) {
 	if err := viper.Unmarshal(&config); err != nil {
 		return ConfigResult{}, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
-
-	params.Logger.Info("configuration loaded successfully", slog.String("config_path", configPath))
 
 	return ConfigResult{
 		Config: &config,
