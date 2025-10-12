@@ -18,9 +18,9 @@ func NewInfoInterceptor(logger *slog.Logger) *InfoInterceptor {
 // UnaryInterceptor is a unary Interceptor that logs the method name and request
 func (i InfoInterceptor) BuildUnaryInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		i.logger.Info("received UnaryInterceptor", slog.String("full_method", info.FullMethod), slog.Any("req", req))
+		i.logger.Debug("received UnaryInterceptor", slog.String("full_method", info.FullMethod), slog.Any("req", req))
 		resp, err := handler(ctx, req)
-		i.logger.Info("ended UnaryInterceptor", slog.String("full_method", info.FullMethod), slog.Any("res", resp))
+		i.logger.Debug("ended UnaryInterceptor", slog.String("full_method", info.FullMethod), slog.Any("res", resp))
 		return resp, err
 	}
 }
@@ -28,14 +28,14 @@ func (i InfoInterceptor) BuildUnaryInterceptor() grpc.UnaryServerInterceptor {
 // StreamInterceptor is a stream interceptor that logs the method name
 func (i InfoInterceptor) BuildStreamInterceptor() grpc.StreamServerInterceptor {
 	return func(srv any, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		i.logger.Info("running StreamInterceptor", slog.String("full_method", info.FullMethod))
+		i.logger.Debug("running StreamInterceptor", slog.String("full_method", info.FullMethod))
 
 		err := handler(srv, ss)
 
 		if err != nil {
 			i.logger.Error("Stream error", slog.String("full_method", info.FullMethod), slog.Any("err", err))
 		} else {
-			i.logger.Info("Stream finished successfully", slog.String("full_method", info.FullMethod))
+			i.logger.Debug("Stream finished successfully", slog.String("full_method", info.FullMethod))
 		}
 
 		return err
