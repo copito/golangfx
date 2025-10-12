@@ -42,7 +42,7 @@ func (h *SwaggerFileHandler) Method() string {
 func (h *SwaggerFileHandler) ServeHTTP() runtime.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 		// Resolve the correct absolute path to the openapi directory
-		openapiDir, err := filepath.Abs("../../../openapi")
+		openapiDir, err := filepath.Abs("openapi")
 		if err != nil {
 			http.Error(w, "cannot find openapi path", 400)
 		}
