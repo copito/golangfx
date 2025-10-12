@@ -9,6 +9,11 @@ type Config struct {
 		Service string `mapstructure:"service"`
 	} `mapstructure:"global"`
 
+	Logger struct {
+		Type  string `mapstructure:"type"`
+		Level string `mapstructure:"level"`
+	} `mapstructure:"logger"`
+
 	Database struct {
 		Type             string        `mapstructure:"type"`
 		ConnectionString string        `mapstructure:"connection_string"`
@@ -24,8 +29,9 @@ type Config struct {
 		Environment string `mapstructure:"environment"`
 
 		OpenTelemetry struct {
-			Type              string `mapstructure:"type"`
-			CollectorEndpoint string `mapstructure:"collector_endpoint"`
+			Type              string  `mapstructure:"type"`
+			CollectorEndpoint string  `mapstructure:"collector_endpoint"`
+			SamplingRate      float64 `mapstructure:"sampling_rate"`
 		} `mapstructure:"open_telemetry"`
 	} `mapstructure:"backend"`
 

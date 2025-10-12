@@ -3,12 +3,15 @@ package modules
 import (
 	"log/slog"
 	"os"
+	"path/filepath"
 
+	"github.com/copito/runner/src/internal/entities"
 	"go.uber.org/fx"
 )
 
 type LoggerParams struct {
 	fx.In
+	Config *entities.Config
 }
 
 type LoggerResult struct {
@@ -17,40 +20,48 @@ type LoggerResult struct {
 	Logger *slog.Logger
 }
 
-// func NewLogger(p LoggerParams) (LoggerResult, error) {
-// 	loggerWithColor := os.Getenv("LOGGER_WITH_COLOR")
-// 	loggerLevel := os.Getenv("LOGGER_LEVEL")
-
-// 	var withColor bool
-// 	if strings.ToLower(loggerWithColor) == "true" {
-// 		withColor = true
-// 	} else {
-// 		withColor = false
-// 	}
-
-// 	var level slog.Level
-// 	if strings.ToLower(loggerLevel) == "debug" {
-// 		level = slog.LevelDebug
-// 	} else if strings.ToLower(loggerLevel) == "info" {
-// 		level = slog.LevelInfo
-// 	} else if strings.ToLower(loggerLevel) == "warn" {
-// 		level = slog.LevelWarn
-// 	} else if strings.ToLower(loggerLevel) == "error" {
-// 		level = slog.LevelError
-// 	} else {
-// 		level = slog.LevelInfo
-// 	}
-
-// 	handler := logger.NewCustomLogHandler(withColor, level)
-// 	logger := slog.New(handler)
-
-// 	return LoggerResult{
-// 		Logger: logger,
-// 	}, nil
-// }
+func ReplaceSourceAttr(groups []string, a slog.Attr) slog.Attr {
+	if a.Key == slog.SourceKey {
+		if s, ok := a.Value.Any().(*slog.Source); ok {
+			filename := filepath.Base(s.File)
+			return slog.Any(a.Key, filename)
+		}
+	}
+	return a
+}
 
 func NewLogger(p LoggerParams) (LoggerResult, error) {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	var level slog.Level
+	switch p.Config.Logger.Level {
+	case "DEBUG":
+		level = slog.LevelDebug
+	case "INFO":
+		level = slog.LevelInfo
+	case "WARN":
+		level = slog.LevelWarn
+	case "ERROR":
+		level = slog.LevelError
+	default:
+		level = slog.LevelInfo
+	}
+
+	handlerOptions := &slog.HandlerOptions{
+		AddSource:   true,
+		ReplaceAttr: ReplaceSourceAttr,
+		Level:       level,
+	}
+
+	var loggerHandler slog.Handler
+	switch p.Config.Logger.Type {
+	case "JSON":
+		loggerHandler = slog.NewJSONHandler(os.Stdout, handlerOptions)
+	case "TEXT":
+		loggerHandler = slog.NewTextHandler(os.Stdout, handlerOptions)
+	default:
+		loggerHandler = slog.NewJSONHandler(os.Stdout, handlerOptions)
+	}
+
+	logger := slog.New(loggerHandler)
 	logger.Info("setting up logging module (with slog)...")
 
 	return LoggerResult{
