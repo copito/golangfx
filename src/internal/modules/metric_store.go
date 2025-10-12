@@ -8,6 +8,8 @@ import (
 	"github.com/copito/runner/src/internal/entities"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+
+	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 )
 
 type MetricParams struct {
@@ -21,6 +23,7 @@ type MetricResults struct {
 	fx.Out
 
 	MetricRegistry *entities.MetricStore
+	MetricServer   *grpcprom.ServerMetrics
 }
 
 func NewMetricStore(params MetricParams) (MetricResults, error) {
@@ -35,7 +38,17 @@ func NewMetricStore(params MetricParams) (MetricResults, error) {
 		}),
 	}
 
-	return MetricResults{MetricRegistry: &ms}, nil
+	srvMetrics := grpcprom.NewServerMetrics(
+		grpcprom.WithServerHandlingTimeHistogram(
+			grpcprom.WithHistogramBuckets([]float64{0.001, 0.01, 0.1, 1, 3, 6, 9, 20, 30, 60, 90, 120}),
+		),
+	)
+	ms.Registry.MustRegister(srvMetrics)
+
+	return MetricResults{
+		MetricRegistry: &ms,
+		MetricServer:   srvMetrics,
+	}, nil
 }
 
 var MetricStoreModule = fx.Provide(NewMetricStore)

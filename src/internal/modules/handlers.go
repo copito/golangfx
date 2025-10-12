@@ -21,5 +21,6 @@ var AdditionalHandlerModule = fx.Options(
 	fx.Provide(
 		fx.Annotate(handler.NewSwaggerFileHandler, fx.As(new(handler.HttpHandlerInterface)), fx.ResultTags(`group:"additional_handlers"`)),
 		fx.Annotate(handler.NewSwaggerHandler, fx.As(new(handler.HttpHandlerInterface)), fx.ResultTags(`group:"additional_handlers"`)),
+		fx.Annotate(handler.NewMetricsHandler, fx.As(new(handler.HttpHandlerInterface)), fx.ResultTags(`group:"additional_handlers"`)),
 	),
 )

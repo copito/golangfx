@@ -20,6 +20,7 @@ func main() {
 		modules.DatabasePoolModule,
 		modules.RepositoryModule,
 		modules.MetricStoreModule,
+		modules.TraceProviderModule,
 		modules.KafkaProducerModule,
 		modules.KafkaConsumerModule,
 		modules.HandlerModule,

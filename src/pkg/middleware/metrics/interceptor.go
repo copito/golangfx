@@ -36,7 +36,7 @@ func NewMetricInterceptor(logger *slog.Logger, config *entities.Config, ms *enti
 		),
 	)
 
-	ms.Registry.MustRegister(srvMetrics)
+	// ms.Registry.MustRegister(srvMetrics)
 	exemplarFromContext := func(ctx context.Context) prometheus.Labels {
 		span := trace.SpanContextFromContext(ctx)
 		if span.IsSampled() {
