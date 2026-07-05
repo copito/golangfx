@@ -4,8 +4,6 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/copito/runner/src/internal/entities"
-
 	"go.opentelemetry.io/otel"
 	otlpg "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -14,8 +12,9 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
-
 	"go.uber.org/fx"
+
+	"github.com/copito/runner/src/internal/entities"
 )
 
 type TraceProviderParams struct {
@@ -36,7 +35,7 @@ func NewTraceProvider(params TraceProviderParams) (TraceProviderResult, error) {
 	ctx := context.Background()
 
 	var exporter sdktrace.SpanExporter
-	switch params.Config.Backend.OpenTelemetry.Type {
+	switch params.Config.OpenTelemetry.Type {
 	case "STDOUT":
 		// Set up OTLP tracing (stdout for debug)
 		newExporter, err := stdout.New(stdout.WithPrettyPrint())
@@ -49,7 +48,7 @@ func NewTraceProvider(params TraceProviderParams) (TraceProviderResult, error) {
 		// Set up OTLP tracing (endpoint)
 		newExporter, err := otlpg.New(
 			ctx,
-			otlpg.WithEndpoint(params.Config.Backend.OpenTelemetry.CollectorEndpoint),
+			otlpg.WithEndpoint(params.Config.OpenTelemetry.CollectorEndpoint),
 			otlpg.WithInsecure(),
 		)
 		if err != nil {
@@ -61,7 +60,7 @@ func NewTraceProvider(params TraceProviderParams) (TraceProviderResult, error) {
 		// Set up OTLP tracing (endpoint)
 		newExporter, err := otlp.New(
 			ctx,
-			otlp.WithEndpoint(params.Config.Backend.OpenTelemetry.CollectorEndpoint),
+			otlp.WithEndpoint(params.Config.OpenTelemetry.CollectorEndpoint),
 		)
 		if err != nil {
 			params.Logger.Error("failed to init exporter", "err", slog.Any("err", err))
@@ -79,7 +78,7 @@ func NewTraceProvider(params TraceProviderParams) (TraceProviderResult, error) {
 	if params.Config.Backend.Environment == "local" {
 		sampler = sdktrace.AlwaysSample()
 	} else {
-		sampler = sdktrace.ParentBased(sdktrace.TraceIDRatioBased(params.Config.Backend.OpenTelemetry.SamplingRate))
+		sampler = sdktrace.ParentBased(sdktrace.TraceIDRatioBased(params.Config.OpenTelemetry.SamplingRate))
 	}
 
 	// DEFINE THE RESOURCE WITH THE SERVICE NAME
