@@ -21,10 +21,11 @@ backend:
   grpc_port: ":50001"
   tenancy: "company/development"
   environment: "local"
-  open_telemetry:
-    type: "STDOUT" # STDOUT, HTTP, GRPC
-    collector_endpoint: "alloy:4317"
-    sampling_rate: 0.01
+
+open_telemetry:
+  type: "STDOUT" # STDOUT, HTTP, GRPC
+  collector_endpoint: "alloy:4317"
+  sampling_rate: 0.01
 
 # Setting up Kafka product
 kafka:
