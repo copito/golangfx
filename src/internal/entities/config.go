@@ -8,11 +8,29 @@ type GlobalConfig struct {
 	Service string `mapstructure:"service"`
 }
 
+// Logger configuration structure for the application.
+type LoggerType string
+
+const (
+	LoggerTypeJSON LoggerType = "JSON"
+	LoggerTypeTEXT LoggerType = "TEXT"
+)
+
+type LoggerLevel string
+
+const (
+	LoggerLevelDEBUG LoggerLevel = "DEBUG"
+	LoggerLevelINFO  LoggerLevel = "INFO"
+	LoggerLevelWARN  LoggerLevel = "WARN"
+	LoggerLevelERROR LoggerLevel = "ERROR"
+)
+
 type LoggerConfig struct {
-	Type  string `mapstructure:"type"`
-	Level string `mapstructure:"level"`
+	Type  LoggerType  `mapstructure:"type"`
+	Level LoggerLevel `mapstructure:"level"`
 }
 
+// Database configuration structure for the application.
 type DatabaseConfig struct {
 	Type             string        `mapstructure:"type"`
 	ConnectionString string        `mapstructure:"connection_string"`
@@ -21,17 +39,39 @@ type DatabaseConfig struct {
 	ConnMaxLifetime  time.Duration `mapstructure:"conn_max_lifetime"`
 }
 
+// OpenTelemetry configuration structure for the application.
+
+type OpenTelemetryType string
+
+const (
+	OpenTelemetryTypeSTDOUT   OpenTelemetryType = "STDOUT"
+	OpenTelemetryTypeGRPC     OpenTelemetryType = "GRPC"
+	OpenTelemetryTypeHTTP     OpenTelemetryType = "HTTP"
+	OpenTelemetryTypeDisabled OpenTelemetryType = "DISABLED"
+)
+
 type OpenTelemetryConfig struct {
-	Type              string  `mapstructure:"type"`
-	CollectorEndpoint string  `mapstructure:"collector_endpoint"`
-	SamplingRate      float64 `mapstructure:"sampling_rate"`
+	Type              OpenTelemetryType `mapstructure:"type"`
+	CollectorEndpoint string            `mapstructure:"collector_endpoint"`
+	SamplingRate      float64           `mapstructure:"sampling_rate"`
 }
 
+// Backend configuration structure for the application.
+
+type BackendEnvironment string
+
+const (
+	BackendEnvironmentLocal       BackendEnvironment = "local"
+	BackendEnvironmentDevelopment BackendEnvironment = "dev"
+	BackendEnvironmentStaging     BackendEnvironment = "stg"
+	BackendEnvironmentProduction  BackendEnvironment = "prod"
+)
+
 type BackendConfig struct {
-	HttpPort    string `mapstructure:"http_port"`
-	GrpcPort    string `mapstructure:"grpc_port"`
-	Tenancy     string `mapstructure:"tenancy"`
-	Environment string `mapstructure:"environment"`
+	HttpPort    string             `mapstructure:"http_port"`
+	GrpcPort    string             `mapstructure:"grpc_port"`
+	Environment BackendEnvironment `mapstructure:"environment"`
+	// Tenancy     string             `mapstructure:"tenancy"`
 }
 
 type KafkaConfig struct {
@@ -42,6 +82,7 @@ type KafkaConfig struct {
 	TopicProfileMetric            string `mapstructure:"topic_profile_metric"`
 }
 
+// Config is the main configuration structure for the application.
 type Config struct {
 	Global GlobalConfig `mapstructure:"global"`
 

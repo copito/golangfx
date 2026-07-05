@@ -1,25 +1,27 @@
-package modules
+package db
 
 import (
 	"context"
 	"log/slog"
 	"time"
 
-	"github.com/copito/runner/src/internal/entities"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/fx"
+
+	"github.com/copito/runner/src/internal/entities"
+	"github.com/copito/runner/src/internal/modules/config"
 )
 
 // DBParams defines the dependencies needed by NewGormDB.
-type DBPoolParams struct {
+type Params struct {
 	fx.In
 
-	Lifecycle fx.Lifecycle
-	Logger    *slog.Logger
-	Config    *entities.Config
+	Lifecycle      fx.Lifecycle
+	Logger         *slog.Logger
+	ConfigProvider config.ConfigProvider
 }
 
-type DBPoolResults struct {
+type Result struct {
 	fx.Out
 
 	DB *pgxpool.Pool
@@ -68,7 +70,7 @@ func ConfigDatabase(logger *slog.Logger, config *entities.Config) *pgxpool.Confi
 }
 
 // NewDatabase initializes a PGXPool connection to Postgres with lifecycle management.
-func NewDatabasePool(params DBPoolParams) (DBPoolResults, error) {
+func NewDatabasePool(params Params) (Result, error) {
 	params.Logger.Info("setting up Database module (with PGXPool)...")
 
 	ctx := context.Background()
@@ -78,10 +80,12 @@ func NewDatabasePool(params DBPoolParams) (DBPoolResults, error) {
 	// 	return DBPoolResults{}, err
 	// }
 
-	config := ConfigDatabase(params.Logger, params.Config)
-	conn, err := pgxpool.NewWithConfig(ctx, config)
+	config := params.ConfigProvider.Get()
+
+	dbConfig := ConfigDatabase(params.Logger, config)
+	conn, err := pgxpool.NewWithConfig(ctx, dbConfig)
 	if err != nil {
-		return DBPoolResults{}, err
+		return Result{}, err
 	}
 
 	// conn, err := pgx.Connect(ctx, dbConfig.ConnectionString)
@@ -109,7 +113,5 @@ func NewDatabasePool(params DBPoolParams) (DBPoolResults, error) {
 		},
 	})
 
-	return DBPoolResults{DB: conn}, nil
+	return Result{DB: conn}, nil
 }
-
-var DatabasePoolModule = fx.Provide(NewDatabasePool)

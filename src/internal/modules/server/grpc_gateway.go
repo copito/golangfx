@@ -1,4 +1,4 @@
-package modules
+package server
 
 import (
 	"context"
@@ -7,12 +7,13 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/copito/runner/src/internal/entities"
-	"github.com/copito/runner/src/internal/handler"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	"github.com/copito/runner/src/internal/handler"
+	"github.com/copito/runner/src/internal/modules/config"
 )
 
 type GRPCGatewayParams struct {
@@ -20,7 +21,7 @@ type GRPCGatewayParams struct {
 
 	Lifecycle          fx.Lifecycle
 	Logger             *slog.Logger
-	Config             *entities.Config
+	ConfigProvider     config.ConfigProvider
 	Handlers           []handler.GRPCHandlerInterface `group:"grpc_handlers"`       // Collect all handlers from the group.
 	AdditionalHandlers []handler.HttpHandlerInterface `group:"additional_handlers"` // Collect all handlers from the group.
 
@@ -37,10 +38,11 @@ type GRPCGatewayResults struct {
 
 func NewGRPCGateway(params GRPCGatewayParams) (GRPCGatewayResults, error) {
 	params.Logger.Info("setting up gRPC Gateway module...")
+	config := params.ConfigProvider.Get()
 
-	backendConfig := params.Config.Backend
+	backendConfig := config.Backend
 
-	grpcFullUrl := "0.0.0.0" + backendConfig.GrpcPort
+	grpcFullUrl := fmt.Sprintf("0.0.0.0%s", backendConfig.GrpcPort)
 	conn, err := grpc.NewClient(
 		grpcFullUrl,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -98,5 +100,3 @@ func NewGRPCGateway(params GRPCGatewayParams) (GRPCGatewayResults, error) {
 		HttpServer: server,
 	}, nil
 }
-
-var GRPCGatewayModule = fx.Provide(NewGRPCGateway)

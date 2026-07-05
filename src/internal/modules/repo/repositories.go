@@ -1,31 +1,30 @@
-package modules
+package repo
 
 import (
 	"context"
 	"log/slog"
 
-	"github.com/copito/runner/src/internal/entities"
-	"github.com/copito/runner/src/internal/repository"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/fx"
+
+	"github.com/copito/runner/src/internal/repository"
 )
 
-type RepositoryParams struct {
+type Params struct {
 	fx.In
 
 	Lifecycle fx.Lifecycle
 	Logger    *slog.Logger
-	Config    *entities.Config
 	DB        *pgxpool.Pool
 }
 
-type RepositoryResults struct {
+type Result struct {
 	fx.Out
 
 	Repositories *repository.Queries
 }
 
-func NewRepository(params RepositoryParams) (RepositoryResults, error) {
+func NewRepository(params Params) (Result, error) {
 	params.Logger.Info("setting up Repository module...")
 
 	// repo := repository.New(params.DB)
@@ -43,7 +42,5 @@ func NewRepository(params RepositoryParams) (RepositoryResults, error) {
 		},
 	})
 
-	return RepositoryResults{Repositories: repo}, nil
+	return Result{Repositories: repo}, nil
 }
-
-var RepositoryModule = fx.Provide(NewRepository)

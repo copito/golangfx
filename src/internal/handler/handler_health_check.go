@@ -15,15 +15,16 @@ type HealthCheckHandler struct {
 	// Required by GRPC
 	health.UnimplementedHealthServer
 
-	// Common parameters that will be used by Handlers
-	CommonHandlerParams
+	Logger *slog.Logger
 }
 
 // Has to always return the interface GRPCHandlerInterface in the signature
 // to be picked up by the fx framework and added to the list of handlers.
 // Please always add to handlers.go in the modules packages too
-func NewHealthCheckHandler(params CommonHandlerParams) GRPCHandlerInterface {
-	return &HealthCheckHandler{CommonHandlerParams: params}
+func NewHealthCheckHandler(logger *slog.Logger) HealthCheckHandler {
+	return HealthCheckHandler{
+		Logger: logger,
+	}
 }
 
 // Register registers the RunnerHandlers to the gRPC server.
@@ -52,7 +53,7 @@ func (s *HealthCheckHandler) RegisterGRPCGateway(ctx context.Context, mux *runti
 			httpStatus = http.StatusServiceUnavailable
 		}
 
-		// Wrtie the response as JSON
+		// Write the response as JSON
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(httpStatus)
 		json.NewEncoder(w).Encode(health.HealthCheckResponse{

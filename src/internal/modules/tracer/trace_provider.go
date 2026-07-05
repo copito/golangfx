@@ -1,7 +1,8 @@
-package modules
+package tracer
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"go.opentelemetry.io/otel"
@@ -15,14 +16,15 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/copito/runner/src/internal/entities"
+	"github.com/copito/runner/src/internal/modules/config"
 )
 
 type TraceProviderParams struct {
 	fx.In
-	Lifecycle   fx.Lifecycle
-	Logger      *slog.Logger
-	Config      *entities.Config
-	MetricStore *entities.MetricStore
+	Lifecycle      fx.Lifecycle
+	Logger         *slog.Logger
+	ConfigProvider config.ConfigProvider
+	MetricStore    *entities.MetricStore
 }
 
 type TraceProviderResult struct {
@@ -32,11 +34,12 @@ type TraceProviderResult struct {
 
 func NewTraceProvider(params TraceProviderParams) (TraceProviderResult, error) {
 	params.Logger.Info("setting up trace provider (with net)")
+	config := params.ConfigProvider.Get()
 	ctx := context.Background()
 
 	var exporter sdktrace.SpanExporter
-	switch params.Config.OpenTelemetry.Type {
-	case "STDOUT":
+	switch config.OpenTelemetry.Type {
+	case entities.OpenTelemetryTypeSTDOUT:
 		// Set up OTLP tracing (stdout for debug)
 		newExporter, err := stdout.New(stdout.WithPrettyPrint())
 		if err != nil {
@@ -44,11 +47,11 @@ func NewTraceProvider(params TraceProviderParams) (TraceProviderResult, error) {
 			panic(err)
 		}
 		exporter = newExporter
-	case "GRPC":
+	case entities.OpenTelemetryTypeGRPC:
 		// Set up OTLP tracing (endpoint)
 		newExporter, err := otlpg.New(
 			ctx,
-			otlpg.WithEndpoint(params.Config.OpenTelemetry.CollectorEndpoint),
+			otlpg.WithEndpoint(config.OpenTelemetry.CollectorEndpoint),
 			otlpg.WithInsecure(),
 		)
 		if err != nil {
@@ -56,38 +59,43 @@ func NewTraceProvider(params TraceProviderParams) (TraceProviderResult, error) {
 			panic(err)
 		}
 		exporter = newExporter
-	case "HTTP":
+	case entities.OpenTelemetryTypeHTTP:
 		// Set up OTLP tracing (endpoint)
 		newExporter, err := otlp.New(
 			ctx,
-			otlp.WithEndpoint(params.Config.OpenTelemetry.CollectorEndpoint),
+			otlp.WithEndpoint(config.OpenTelemetry.CollectorEndpoint),
 		)
 		if err != nil {
 			params.Logger.Error("failed to init exporter", "err", slog.Any("err", err))
 			panic(err)
 		}
 		exporter = newExporter
-	case "DISABLED":
+	case entities.OpenTelemetryTypeDisabled:
 		params.Logger.Error("OpenTelemetry is disabled")
+		return TraceProviderResult{}, nil
 	default:
 		params.Logger.Error("invalid OpenTelemetry is disabled")
+		return TraceProviderResult{}, fmt.Errorf("invalid OpenTelemetry type: %s", config.OpenTelemetry.Type)
 	}
 
 	// Setup OTLP tracing Sampler
 	var sampler sdktrace.Sampler
-	if params.Config.Backend.Environment == "local" {
+	if config.Backend.Environment == entities.BackendEnvironmentLocal {
 		sampler = sdktrace.AlwaysSample()
 	} else {
-		sampler = sdktrace.ParentBased(sdktrace.TraceIDRatioBased(params.Config.OpenTelemetry.SamplingRate))
+		sampler = sdktrace.ParentBased(sdktrace.TraceIDRatioBased(config.OpenTelemetry.SamplingRate))
 	}
 
 	// DEFINE THE RESOURCE WITH THE SERVICE NAME
 	res, err := resource.New(
 		ctx,
 		resource.WithAttributes(
-			semconv.ServiceNameKey.String(params.Config.Global.Service),
-			semconv.DeploymentEnvironmentKey.String(params.Config.Backend.Environment),
+			semconv.ServiceNameKey.String(config.Global.Service),
+			semconv.DeploymentEnvironmentKey.String(string(config.Backend.Environment)),
 		),
+		resource.WithFromEnv(),
+		resource.WithTelemetrySDK(),
+		resource.WithHost(),
 	)
 	if err != nil {
 		params.Logger.Error("failed to create otel resource", slog.Any("err", err))
@@ -125,5 +133,3 @@ func NewTraceProvider(params TraceProviderParams) (TraceProviderResult, error) {
 		TraceProvider: tp,
 	}, nil
 }
-
-var TraceProviderModule = fx.Provide(NewTraceProvider)

@@ -4,11 +4,12 @@ import (
 	"context"
 	"log/slog"
 
-	pb "github.com/copito/runner/idl_gen/runner/v1"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	pb "github.com/copito/runner/idl_gen/runner/v1"
 )
 
 type RunnerHandler struct {
@@ -16,14 +17,16 @@ type RunnerHandler struct {
 	pb.UnimplementedRunnerServiceServer
 
 	// Common parameters that will be used by Handlers
-	CommonHandlerParams
+	Logger *slog.Logger
 }
 
 // Has to always return the interface GRPCHandlerInterface in the signature
 // to be picked up by the fx framework and added to the list of handlers.
 // Please always add to handlers.go in the modules packages too
-func NewRunnerHandler(params CommonHandlerParams) GRPCHandlerInterface {
-	return &RunnerHandler{CommonHandlerParams: params}
+func NewRunnerHandler(logger *slog.Logger) RunnerHandler {
+	return RunnerHandler{
+		Logger: logger,
+	}
 }
 
 // Register registers the RunnerHandlers to the gRPC server.

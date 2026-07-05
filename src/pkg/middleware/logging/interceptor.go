@@ -5,11 +5,14 @@ import (
 	"log/slog"
 	"slices"
 
-	"github.com/copito/runner/src/internal/entities"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
+	healthv1 "google.golang.org/grpc/health/grpc_health_v1"
+	reflectionv1alpha "google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
+
+	"github.com/copito/runner/src/internal/entities"
 )
 
 func InterceptorLogger(l *slog.Logger) logging.Logger {
@@ -54,8 +57,10 @@ func (l *LoggingInterceptor) BuildStreamInterceptor() grpc.StreamServerIntercept
 
 func (l *LoggingInterceptor) ExecuteInterceptor(_ context.Context, c interceptors.CallMeta) bool {
 	skipPaths := []string{
-		"/grpc.health.v1.Health/Check",
-		"/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo",
+		healthv1.Health_Check_FullMethodName,
+		healthv1.Health_Watch_FullMethodName,
+		healthv1.Health_List_FullMethodName,
+		reflectionv1alpha.ServerReflection_ServerReflectionInfo_FullMethodName,
 	}
 
 	matchSkipPath := slices.Contains(skipPaths, c.FullMethod())

@@ -1,15 +1,14 @@
-package modules
+package metricstore
 
 import (
 	"log/slog"
 
+	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"go.uber.org/fx"
 
 	"github.com/copito/runner/src/internal/entities"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
-
-	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 )
 
 type MetricParams struct {
@@ -50,5 +49,3 @@ func NewMetricStore(params MetricParams) (MetricResults, error) {
 		MetricServer:   srvMetrics,
 	}, nil
 }
-
-var MetricStoreModule = fx.Provide(NewMetricStore)

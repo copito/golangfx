@@ -1,20 +1,22 @@
-package modules
+package log
 
 import (
 	"log/slog"
 	"os"
 	"path/filepath"
 
-	"github.com/copito/runner/src/internal/entities"
 	"go.uber.org/fx"
+
+	"github.com/copito/runner/src/internal/entities"
+	"github.com/copito/runner/src/internal/modules/config"
 )
 
-type LoggerParams struct {
+type Params struct {
 	fx.In
-	Config *entities.Config
+	ConfigProvider config.ConfigProvider
 }
 
-type LoggerResult struct {
+type Result struct {
 	fx.Out
 
 	Logger *slog.Logger
@@ -30,16 +32,18 @@ func ReplaceSourceAttr(groups []string, a slog.Attr) slog.Attr {
 	return a
 }
 
-func NewLogger(p LoggerParams) (LoggerResult, error) {
+func NewLogger(p Params) (Result, error) {
+	config := p.ConfigProvider.Get()
+
 	var level slog.Level
-	switch p.Config.Logger.Level {
-	case "DEBUG":
+	switch config.Logger.Level {
+	case entities.LoggerLevelDEBUG:
 		level = slog.LevelDebug
-	case "INFO":
+	case entities.LoggerLevelINFO:
 		level = slog.LevelInfo
-	case "WARN":
+	case entities.LoggerLevelWARN:
 		level = slog.LevelWarn
-	case "ERROR":
+	case entities.LoggerLevelERROR:
 		level = slog.LevelError
 	default:
 		level = slog.LevelInfo
@@ -52,10 +56,10 @@ func NewLogger(p LoggerParams) (LoggerResult, error) {
 	}
 
 	var loggerHandler slog.Handler
-	switch p.Config.Logger.Type {
-	case "JSON":
+	switch config.Logger.Type {
+	case entities.LoggerTypeJSON:
 		loggerHandler = slog.NewJSONHandler(os.Stdout, handlerOptions)
-	case "TEXT":
+	case entities.LoggerTypeTEXT:
 		loggerHandler = slog.NewTextHandler(os.Stdout, handlerOptions)
 	default:
 		loggerHandler = slog.NewJSONHandler(os.Stdout, handlerOptions)
@@ -64,7 +68,7 @@ func NewLogger(p LoggerParams) (LoggerResult, error) {
 	logger := slog.New(loggerHandler)
 	logger.Info("setting up logging module (with slog)...")
 
-	return LoggerResult{
+	return Result{
 		Logger: logger,
 	}, nil
 }
