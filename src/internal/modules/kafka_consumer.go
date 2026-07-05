@@ -4,9 +4,10 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/copito/runner/src/internal/entities"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"go.uber.org/fx"
+
+	"github.com/copito/runner/src/internal/entities"
 )
 
 type KafkaConsumerParams struct {

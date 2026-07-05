@@ -7,7 +7,8 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+
 	"github.com/copito/runner/src/internal/entities"
 )
 
