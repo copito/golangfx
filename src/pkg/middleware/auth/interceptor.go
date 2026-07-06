@@ -5,11 +5,12 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/copito/runner/src/internal/entities"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+
+	"github.com/copito/runner/src/internal/entities"
 )
 
 var (
@@ -24,7 +25,7 @@ type AuthInterceptor struct {
 }
 
 func NewAuthInterceptor(logger *slog.Logger, config *entities.Config) *AuthInterceptor {
-	if config.Backend.Environment == "local" {
+	if config.Backend.Environment == entities.BackendEnvironmentLocal {
 		provider := NewLocalAuthProvider(logger)
 		return &AuthInterceptor{authProvider: provider, logger: logger}
 	} else {
