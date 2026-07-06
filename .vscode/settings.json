@@ -11,6 +11,9 @@
         "**/archive": false
     },
     "explorerExclude.backup": {},
+    "go.alternateTools": {
+        "dlv": "/home/copito/go/bin/dlv"
+    },
     "sqltools.connections": [
         {
             "previewLimit": 50,
