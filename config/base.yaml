@@ -27,6 +27,17 @@ open_telemetry:
   collector_endpoint: "alloy:4317"
   sampling_rate: 0.01
 
+
+auth:
+  type: "OIDC"
+  client_id: "my-golang-api"
+  client_secret: "MyppaWwh5mQIY0vttUSQ7lmJ4sh1DASB"
+  issuer_url: "http://localhost:8080/realms/internal-prod"
+  redirect_url: "http://localhost:5000/callback" # This should match the redirect URL registered with your OIDC provider
+  scopes:
+    - "profile"
+    - "email"
+
 # Setting up Kafka product
 kafka:
   server: "redpanda:9092"
@@ -34,3 +45,7 @@ kafka:
   change_data_capture_topic_regex: "^cdc_.*"
   topic_profile_management: "profile_management"
   topic_profile_metric: "profile_metric"
+
+
+chuck_norris_api:
+  base_url: "https://api.chucknorris.io/"

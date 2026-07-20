@@ -1,0 +1,83 @@
+tags:
+  environment: dev
+
+http:
+  host: prof-dev-rest.example.com
+  grpc:
+    host: prof-dev.example.com
+
+application:
+  annotations:
+    vault.hashicorp.com/agent-inject: "true"
+    vault.hashicorp.com/role: "team-abc"
+    vault.hashicorp.com/service: "https://vault.example.com"
+    vault.hashicorp.com/agent-inject-secret-config: "example/secrets"
+    vault.hashicorp.com/agent-inject-template-config: |
+      {{ with secret "example/secrets/roles" -}}
+        export VAULT_ROLE_ID="{{ .Data.data.role_id }}"
+        export VAULT_SECRET_ID="{{ .Data.data.secret_id }}"
+      {{- end }}
+    vault.hashicorp.com/agent-inject-secret-apidb: "example/secrets"
+    vault.hashicorp.com/agent-inject-file-apidb: "base.yaml"
+    vault.hashicorp.com/agent-inject-template-apidb: |
+      {{- with secret "example/secrets/dev/prof/db" }}
+        global:
+          version: "0.1.0"
+          author: "Copito"
+          service: "api-service"
+
+        logger:
+          type: "JSON"
+          level: "INFO"
+
+        # Setting up api database connection
+        database:
+          type: postgres
+          connection_string: "postgres://{{ .Data.data.user}}:{{ .Data.data.password}}@{{ .Data.data.host}}:{{ .Data.data.port}}/{{ .Data.data.database_name}}?sslmode=disable"
+          max_open_conns: 10
+          max_idle_conns: 5
+          conn_max_lifetime: 300s
+
+        # Setting up api configurations
+        backend:
+          http_port: ":5000"
+          grpc_port: ":50001"
+          tenancy: "company/development"
+          environment: "local"
+
+        open_telemetry:
+          type: "STDOUT" # STDOUT, HTTP, GRPC
+          collector_endpoint: "alloy:4317"
+          sampling_rate: 0.01
+      {{- end }}
+      {{- with secret "example/secrets/dev/prof/auth" }}
+        auth:
+          type: "OIDC"
+          client_id: "{{ .Data.data.client_id}}"
+          client_secret: "{{ .Data.data.client_secret}}"
+          issuer_url: "http://localhost:8080/realms/internal-prod"
+          redirect_url: "http://localhost:5000/callback" # This should match the redirect URL registered with your OIDC provider
+          scopes:
+            - "profile"
+            - "email"
+
+        # Setting up Kafka product
+        kafka:
+          server: "redpanda:9092"
+          change_data_capture_topic_example: "cdc_orders_payment"
+          change_data_capture_topic_regex: "^cdc_.*"
+          topic_profile_management: "profile_management"
+          topic_profile_metric: "profile_metric"
+      {{- end }}
+
+  environment:
+    CONFIG_PATH: "vault/secrets/base.yaml"
+    GOGC: "60" # Triggering garbage collection when heap grows 60%
+
+  command:
+    - "./service"
+  
+kubeContext: prod
+kubeNamespace: platform
+
+
