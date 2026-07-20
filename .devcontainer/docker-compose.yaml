@@ -1,20 +1,27 @@
-version: "3.9"
-
 services:
 
   app:
     build: 
       context: .
       dockerfile: Dockerfile
-    env_file:
+
+    ports:
+      - "50051:50051"
+      - "5005:5005"
+    # env_file:
       # Ensure that the variables in .env match the same variables in devcontainer.json
-      - ../.envrc
+      # - ../.envrc/
+    environment:
+      CONFIG_PATH: /config/base.yaml
+      PROF_BACKEND_HTTP_PORT: ":5005"
+      PROF_BACKEND_GRPC_PORT: ":50051"
+
   
     volumes:
       - ../..:/workspaces:cached
       
     # Overrides default command so things don't shut down after the process ends.
-    command: sleep infinity
+    command: ["./service"]
 
     # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
     # Do this if port in db is not exposed
@@ -60,62 +67,62 @@ services:
   #   entrypoint: >
   #     sh -c "make migrate-up"
 
-  vault:
-    image: hashicorp/vault:latest
-    environment:
-      VAULT_DEV_ROOT_TOKEN_ID: testtoken
-    ports:
-      - 8200:8200
-    privileged: true
+  # vault:
+  #   image: hashicorp/vault:latest
+  #   environment:
+  #     VAULT_DEV_ROOT_TOKEN_ID: testtoken
+  #   ports:
+  #     - 8200:8200
+  #   privileged: true
 
 
   # kafka alternative
-  redpanda:
-    image: vectorized/redpanda
-    ports:
-      - "9092:9092"
-      - "29092:29092"
-    command:
-      - redpanda
-      - start
-      - --overprovisioned
-      - --smp
-      - "1"
-      - --memory
-      - "1G"
-      - --reserve-memory
-      - "0M"
-      - --node-id
-      - "0"
-      - --kafka-addr
-      - PLAINTEXT://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
-      - --advertise-kafka-addr
-      - PLAINTEXT://redpanda:29092,OUTSIDE://redpanda:9092
-      - --check=false
+  # redpanda:
+  #   image: docker.redpanda.com/redpandadata/redpanda:v25.1.5
+  #   ports:
+  #     - "9092:9092"
+  #     - "29092:29092"
+  #   command:
+  #     - redpanda
+  #     - start
+  #     - --overprovisioned
+  #     - --smp
+  #     - "1"
+  #     - --memory
+  #     - "1G"
+  #     - --reserve-memory
+  #     - "0M"
+  #     - --node-id
+  #     - "0"
+  #     - --kafka-addr
+  #     - PLAINTEXT://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
+  #     - --advertise-kafka-addr
+  #     - PLAINTEXT://redpanda:29092,OUTSIDE://redpanda:9092
+  #     - --check=false
 
 
-  redpandaconsole:
-    image: docker.redpanda.com/redpandadata/console:v2.3.8
-    restart: on-failure
-    entrypoint: /bin/sh
-    command: -c "echo \"$$CONSOLE_CONFIG_FILE\" > /tmp/config.yml; /app/console"
-    environment:
-      CONFIG_FILEPATH: /tmp/config.yml
-      CONSOLE_CONFIG_FILE: |
-        kafka:
-          brokers: ["redpanda:29092"]
-          schemaRegistry:
-            enabled: true
-            urls: ["http://redpanda:8081"]
-        connect:
-          enabled: true
-          clusters:
-            - name: datagen
-              url: http://connect:8083        
-    ports:
-      - "8080:8080"
-    depends_on:
-      - redpanda
+  # redpandaconsole:
+  #   image: docker.redpanda.com/redpandadata/console:v2.8.6
+  #   restart: on-failure
+  #   entrypoint: /bin/sh
+  #   command: -c "echo \"$$CONSOLE_CONFIG_FILE\" > /tmp/config.yml; /app/console"
+  #   environment:
+  #     CONFIG_FILEPATH: /tmp/config.yml
+  #     CONSOLE_CONFIG_FILE: |
+  #       kafka:
+  #         brokers: ["redpanda:29092"]
+  #         schemaRegistry:
+  #           enabled: true
+  #           urls: ["http://redpanda:8081"]
+  #       connect:
+  #         enabled: true
+  #         clusters:
+  #           - name: datagen
+  #             url: http://connect:8083        
+  #   ports:
+  #     - "8080:8080"
+  #   depends_on:
+  #     - redpanda
 
 
 # volumes:

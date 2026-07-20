@@ -1,0 +1,9 @@
+{
+  "features": {
+    "ghcr.io/audacioustux/devcontainers/k9s:1": {
+      "version": "1.0.1",
+      "resolved": "ghcr.io/audacioustux/devcontainers/k9s@sha256:c37d3a6b4bbfa5ee801da37ccbde43ed3b254f014e58f9a7641e5430973ee2dd",
+      "integrity": "sha256:c37d3a6b4bbfa5ee801da37ccbde43ed3b254f014e58f9a7641e5430973ee2dd"
+    }
+  }
+}

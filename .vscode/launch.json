@@ -18,7 +18,7 @@
                 "PROF_KAFKA_SERVER":  "localhost:9092",
                 "PROF_DATABASE_CONNECTION_STRING": "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable",
                 "PROF_KAFKA_TOPIC_PROFILE_METRIC": "lemon",
-                "PROF_BACKEND_OPEN_TELEMETRY_TYPE": "DISABLED"
+                "PROF_OPEN_TELEMETRY_TYPE": "DISABLED"
             },
             "args": []
         },
@@ -35,7 +35,7 @@
                 "ENV": "local",
                 "PROF_KAFKA_SERVER":  "redpanda:9092",
                 "PROF_DATABASE_CONNECTION_STRING": "postgres://postgres:postgres@db:5432/postgres?sslmode=disable",
-                "PROF_KAFKA_TOPIC_PROFILE_METRIC": "lemon"
+                "PROF_OPEN_TELEMETRY_TYPE": "DISABLED"
             },
             "args": []
         }
