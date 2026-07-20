@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package common.v1;
+
+message PaginationRequest {
+    string page_token = 1;
+}
+
+message PaginationResponse {
+    string next_page_token = 1;
+    string previous_page_token = 2;
+}
+

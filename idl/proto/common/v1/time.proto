@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package common.v1;
+
+import "google/protobuf/timestamp.proto";
+
+message TimestampWithTimezone {
+    // RFC3339 formatted timestamp with timezone information
+    google.protobuf.Timestamp timestamp = 1;
+
+    // IANA Time Zone Database name, i.e: "America/New_York"
+    string timezone = 2;
+}
+

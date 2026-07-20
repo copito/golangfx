@@ -74,6 +74,8 @@ message QueryJob {
     google.protobuf.Timestamp created_at = 6;
     google.protobuf.Timestamp adjusted_at = 7;
 
+
+
     option (buf.validate.message).cel = {
         id: "query_job.adjusted_at.gte.created_at"
         message: "End date must be greated than or equal to Start Date"
