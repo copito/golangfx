@@ -6,6 +6,8 @@ import (
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
 
+	"github.com/copito/runner/src/internal/controller"
+	"github.com/copito/runner/src/internal/gateway"
 	"github.com/copito/runner/src/internal/handler"
 	"github.com/copito/runner/src/internal/modules"
 	"github.com/copito/runner/src/internal/modules/config"
@@ -31,6 +33,9 @@ func main() {
 		tracer.Module,
 		modules.KafkaProducerModule,
 		modules.KafkaConsumerModule,
+		gateway.Module,
+		handler.Module,
+		controller.Module,
 		handler.Module,
 		server.Module,
 
