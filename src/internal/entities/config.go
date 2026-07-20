@@ -74,12 +74,33 @@ type BackendConfig struct {
 	// Tenancy     string             `mapstructure:"tenancy"`
 }
 
+// Auth configuration structure for the application.
+type AuthType string
+
+const (
+	AuthTypeOIDC     AuthType = "OIDC"
+	AuthTypeDisabled AuthType = "DISABLED"
+)
+
+type AuthConfig struct {
+	AuthType     AuthType `mapstructure:"type"`
+	ClientID     string   `mapstructure:"client_id"`
+	ClientSecret string   `mapstructure:"client_secret"`
+	RedirectURL  string   `mapstructure:"redirect_url"`
+	IssuerURL    string   `mapstructure:"issuer_url"`
+	Scopes       []string `mapstructure:"scopes"`
+}
+
 type KafkaConfig struct {
 	Server                        string `mapstructure:"server"`
 	ChangeDataCaptureTopicExample string `mapstructure:"change_data_capture_topic_example"`
 	ChangeDataCaptureTopicRegex   string `mapstructure:"change_data_capture_topic_regex"`
 	TopicProfileManagement        string `mapstructure:"topic_profile_management"`
 	TopicProfileMetric            string `mapstructure:"topic_profile_metric"`
+}
+
+type ChuckNorrisGateway struct {
+	BaseURL string `mapstructure:"base_url"`
 }
 
 // Config is the main configuration structure for the application.
@@ -94,5 +115,9 @@ type Config struct {
 
 	OpenTelemetry OpenTelemetryConfig `mapstructure:"open_telemetry"`
 
+	Auth AuthConfig `mapstructure:"auth"`
+
 	Kafka KafkaConfig `mapstructure:"kafka"`
+
+	ChuckNorrisGateway ChuckNorrisGateway `mapstructure:"chuck_norris_api"`
 }
