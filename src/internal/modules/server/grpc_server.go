@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/copito/runner/src/internal/entities"
-	"github.com/copito/runner/src/internal/handler"
+	"github.com/copito/runner/src/internal/handler/common"
 	"github.com/copito/runner/src/internal/modules/config"
 	"github.com/copito/runner/src/pkg/middleware"
 	"github.com/copito/runner/src/pkg/middleware/auth"
@@ -40,7 +40,7 @@ type GrpcParams struct {
 	MetricStore    *entities.MetricStore
 	MetricServer   *grpcprom.ServerMetrics
 	TraceProvider  *sdktrace.TracerProvider
-	Handlers       []handler.GRPCHandlerInterface `group:"grpc_handlers"` // Collect all handlers from the group.
+	Handlers       []common.GRPCHandlerInterface `group:"grpc_handlers"` // Collect all handlers from the group.
 }
 
 // Results is the output of the gRPC server module.

@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/copito/runner/src/internal/handler"
+	"github.com/copito/runner/src/internal/handler/common"
 	"github.com/copito/runner/src/internal/modules/config"
 )
 
@@ -22,8 +22,8 @@ type GRPCGatewayParams struct {
 	Lifecycle          fx.Lifecycle
 	Logger             *slog.Logger
 	ConfigProvider     config.ConfigProvider
-	Handlers           []handler.GRPCHandlerInterface `group:"grpc_handlers"`       // Collect all handlers from the group.
-	AdditionalHandlers []handler.HttpHandlerInterface `group:"additional_handlers"` // Collect all handlers from the group.
+	Handlers           []common.GRPCHandlerInterface `group:"grpc_handlers"`       // Collect all handlers from the group.
+	AdditionalHandlers []common.HttpHandlerInterface `group:"additional_handlers"` // Collect all handlers from the group.
 
 	// adding as requirement to force order (dependency)
 	GRPCServer *grpc.Server
