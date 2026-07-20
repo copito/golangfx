@@ -1,4 +1,4 @@
-package handler
+package common
 
 import (
 	"context"
@@ -6,8 +6,6 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 )
-
-const validPatternVersion = 1
 
 // ServiceHandler defines an interface for gRPC service handlers.
 type GRPCHandlerInterface interface {

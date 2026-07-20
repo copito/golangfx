@@ -1,4 +1,4 @@
-package handler
+package swagger
 
 import (
 	"net/http"
@@ -6,21 +6,29 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/utilities"
+
+	"github.com/copito/runner/src/internal/handler/common"
 )
+
+type SwaggerFileHandler interface {
+	common.HttpHandlerInterface
+}
+
+var _ SwaggerFileHandler = (*swaggerFileHandler)(nil)
 
 // SwaggerFileHandler is an http.Handler that copies its request body
 // back to the response.
-type SwaggerFileHandler struct{}
+type swaggerFileHandler struct{}
 
 // NewSwaggerFileHandler builds a new SwaggerFileHandler.
-func NewSwaggerFileHandler() *SwaggerFileHandler {
-	return &SwaggerFileHandler{}
+func NewSwaggerFileHandler() SwaggerFileHandler {
+	return &swaggerFileHandler{}
 }
 
-func (h *SwaggerFileHandler) Pattern() runtime.Pattern {
+func (h *swaggerFileHandler) Pattern() runtime.Pattern {
 	// "/openapi/{filepath:.+}"
 	pattern, err := runtime.NewPattern(
-		validPatternVersion,
+		common.ValidPatternVersion,
 		[]int{
 			int(utilities.OpLitPush), 0, // runtime.OpLitPush → Push the literal "openapi" (matches /openapi exactly).
 			int(utilities.OpPushM), 1, // runtime.OpPushM → Matches a deep wildcard ({filepath:.+}) capturing everything after /openapi/.
@@ -34,12 +42,12 @@ func (h *SwaggerFileHandler) Pattern() runtime.Pattern {
 	return pattern
 }
 
-func (h *SwaggerFileHandler) Method() string {
+func (h *swaggerFileHandler) Method() string {
 	return "GET"
 }
 
 // ServeHTTP handles an HTTP request to the /openapi/* endpoint.
-func (h *SwaggerFileHandler) ServeHTTP() runtime.HandlerFunc {
+func (h *swaggerFileHandler) ServeHTTP() runtime.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 		// Resolve the correct absolute path to the openapi directory
 		openapiDir, err := filepath.Abs("openapi")

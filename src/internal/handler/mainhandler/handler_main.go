@@ -1,4 +1,4 @@
-package handler
+package mainhandler
 
 import (
 	"encoding/json"
@@ -7,26 +7,31 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/utilities"
 
+	"github.com/copito/runner/src/internal/handler/common"
 	"github.com/copito/runner/src/internal/modules/config"
 )
 
+type MainHandler interface {
+	common.HttpHandlerInterface
+}
+
 // MainHandler is an http.Handler that copies its request body
 // back to the response.
-type MainHandler struct {
+type mainHandler struct {
 	configProvider config.ConfigProvider
 }
 
 // NewMainHandler builds a new MainHandler.
-func NewMainHandler(configProvider config.ConfigProvider) *MainHandler {
-	return &MainHandler{
+func NewMainHandler(configProvider config.ConfigProvider) *mainHandler {
+	return &mainHandler{
 		configProvider: configProvider,
 	}
 }
 
-func (h *MainHandler) Pattern() runtime.Pattern {
+func (h *mainHandler) Pattern() runtime.Pattern {
 	// "/"
 	pattern, err := runtime.NewPattern(
-		validPatternVersion,
+		common.ValidPatternVersion,
 		[]int{
 			int(utilities.OpLitPush), 0, // runtime.OpLitPush → Push the literal "docs" (matches /openapi exactly).
 			int(utilities.OpPushM), 1, // runtime.OpPushM → Matches a deep wildcard ({filepath:.+}) capturing everything after /docs/.
@@ -40,12 +45,12 @@ func (h *MainHandler) Pattern() runtime.Pattern {
 	return pattern
 }
 
-func (h *MainHandler) Method() string {
+func (h *mainHandler) Method() string {
 	return "GET"
 }
 
 // ServeHTTP handles an HTTP request to the /docs endpoint.
-func (h *MainHandler) ServeHTTP() runtime.HandlerFunc {
+func (h *mainHandler) ServeHTTP() runtime.HandlerFunc {
 	type Data struct {
 		ProjectName string `json:"project_name"`
 		Version     string `json:"version"`

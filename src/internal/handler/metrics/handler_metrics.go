@@ -1,28 +1,34 @@
-package handler
+package metrics
 
 import (
 	"net/http"
 
-	"github.com/copito/runner/src/internal/entities"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/utilities"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+
+	"github.com/copito/runner/src/internal/entities"
+	"github.com/copito/runner/src/internal/handler/common"
 )
 
+type MetricsHandler interface {
+	common.HttpHandlerInterface
+}
+
 // MetricsHandler is an http.Handler that copies its request body back to the response.
-type MetricsHandler struct {
+type metricsHandler struct {
 	metricStore *entities.MetricStore
 }
 
 // NewSwaggerFileHandler builds a new SwaggerFileHandler.
-func NewMetricsHandler(metricStore *entities.MetricStore) *MetricsHandler {
-	return &MetricsHandler{metricStore: metricStore}
+func NewMetricsHandler(metricStore *entities.MetricStore) *metricsHandler {
+	return &metricsHandler{metricStore: metricStore}
 }
 
-func (h *MetricsHandler) Pattern() runtime.Pattern {
+func (h *metricsHandler) Pattern() runtime.Pattern {
 	// "/metrics"
 	pattern, err := runtime.NewPattern(
-		validPatternVersion,
+		common.ValidPatternVersion,
 		[]int{
 			int(utilities.OpLitPush), 0, // runtime.OpLitPush → Push the literal "metrics" (matches /metrics exactly).
 		},
@@ -35,12 +41,12 @@ func (h *MetricsHandler) Pattern() runtime.Pattern {
 	return pattern
 }
 
-func (h *MetricsHandler) Method() string {
+func (h *metricsHandler) Method() string {
 	return "GET"
 }
 
 // ServeHTTP handles an HTTP request to the /openapi/* endpoint.
-func (h *MetricsHandler) ServeHTTP() runtime.HandlerFunc {
+func (h *metricsHandler) ServeHTTP() runtime.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 		// Add prometheus metrics as route for http
 		promhttp.HandlerFor(h.metricStore.Registry, promhttp.HandlerOpts{}).ServeHTTP(w, r)
